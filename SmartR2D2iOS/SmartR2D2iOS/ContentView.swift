@@ -159,13 +159,13 @@ private struct DroidWallpaperView: View {
                     .frame(width: proxy.size.width, height: proxy.size.height)
                     .clipped()
                     .saturation(0.95)
-                    .brightness(-0.08)
+                    .brightness(-0.03)
 
                 LinearGradient(
                     colors: [
-                        Color.black.opacity(0.72),
-                        Color(red: 0.0, green: 0.13, blue: 0.22).opacity(0.36),
-                        Color.black.opacity(0.68)
+                        Color.black.opacity(0.5),
+                        Color(red: 0.0, green: 0.13, blue: 0.22).opacity(0.18),
+                        Color.black.opacity(0.48)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -173,8 +173,8 @@ private struct DroidWallpaperView: View {
 
                 LinearGradient(
                     colors: [
-                        Color.black.opacity(0.92),
-                        Color.black.opacity(0.58),
+                        Color.black.opacity(0.9),
+                        Color.black.opacity(0.45),
                         Color.clear
                     ],
                     startPoint: .top,
@@ -183,7 +183,7 @@ private struct DroidWallpaperView: View {
 
                 RadialGradient(
                     colors: [
-                        Color.cyan.opacity(0.16),
+                        Color.cyan.opacity(0.1),
                         Color.clear
                     ],
                     center: .center,
@@ -209,7 +209,7 @@ private struct PortraitMainControlPanel: View {
     let setLED: (R2D2Protocol.LEDColor) -> Void
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 12) {
             ControlSection(title: "Head") {
                 headControls
             }
@@ -229,9 +229,9 @@ private struct PortraitMainControlPanel: View {
                     spacious: true
                 )
                 .frame(maxWidth: .infinity)
-                .frame(height: 210)
+                .frame(height: 292)
             }
-            .frame(height: 242)
+            .frame(height: 326)
 
             CommandStatusStrip(
                 isReady: isReady,
@@ -332,8 +332,8 @@ private struct ControlSection<Content: View>: View {
         .background(
             LinearGradient(
                 colors: [
-                    Color.black.opacity(0.3),
-                    Color(red: 0.02, green: 0.16, blue: 0.22).opacity(0.12)
+                    Color.black.opacity(0.16),
+                    Color(red: 0.02, green: 0.16, blue: 0.22).opacity(0.08)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -342,9 +342,9 @@ private struct ControlSection<Content: View>: View {
         )
         .overlay {
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.white.opacity(0.32), lineWidth: 1)
+                .stroke(Color.white.opacity(0.3), lineWidth: 1)
         }
-        .shadow(color: .black.opacity(0.26), radius: 10, y: 5)
+        .shadow(color: .black.opacity(0.14), radius: 8, y: 4)
     }
 }
 
@@ -687,16 +687,16 @@ private struct DrivePad: View {
     var spacious: Bool = false
 
     var body: some View {
-        let plateWidth: CGFloat = spacious ? 300 : 250
-        let plateHeight: CGFloat = spacious ? 160 : 132
-        let guideWidth: CGFloat = spacious ? 306 : 256
-        let guideHeight: CGFloat = spacious ? 160 : 132
-        let cardinalWidth: CGFloat = spacious ? 88 : 76
-        let diagonalWidth: CGFloat = spacious ? 80 : 68
-        let buttonHeight: CGFloat = spacious ? 52 : 44
-        let diagonalX: CGFloat = spacious ? 92 : 60
-        let upperY: CGFloat = spacious ? -30 : -14
-        let lowerY: CGFloat = spacious ? 50 : 34
+        let plateWidth: CGFloat = spacious ? 330 : 250
+        let plateHeight: CGFloat = spacious ? 205 : 132
+        let guideWidth: CGFloat = spacious ? 336 : 256
+        let guideHeight: CGFloat = spacious ? 205 : 132
+        let cardinalWidth: CGFloat = spacious ? 94 : 76
+        let diagonalWidth: CGFloat = spacious ? 86 : 68
+        let buttonHeight: CGFloat = spacious ? 56 : 44
+        let diagonalX: CGFloat = spacious ? 112 : 60
+        let upperY: CGFloat = spacious ? -44 : -14
+        let lowerY: CGFloat = spacious ? 70 : 34
 
         ZStack {
             HexPadPlate()
@@ -738,7 +738,7 @@ private struct DrivePad: View {
             Group {
                 DriveControlButton(direction: .forward, isEnabled: isEnabled, start: start, stop: stop)
                     .frame(width: cardinalWidth, height: buttonHeight)
-                    .offset(y: spacious ? -66 : -42)
+                    .offset(y: spacious ? -104 : -42)
 
                 DriveControlButton(direction: .forwardLeft, isEnabled: isEnabled, start: start, stop: stop)
                     .frame(width: diagonalWidth, height: buttonHeight)
@@ -757,7 +757,7 @@ private struct DrivePad: View {
 
                 DriveControlButton(direction: .backward, isEnabled: isEnabled, start: start, stop: stop)
                     .frame(width: cardinalWidth, height: buttonHeight)
-                    .offset(y: spacious ? 76 : 50)
+                    .offset(y: spacious ? 112 : 50)
 
                 DriveControlButton(direction: .backwardRight, isEnabled: isEnabled, start: start, stop: stop)
                     .frame(width: diagonalWidth, height: buttonHeight)

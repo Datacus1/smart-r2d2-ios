@@ -44,9 +44,9 @@
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(180deg, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.58) 24%, transparent 52%),
-        radial-gradient(circle at 50% 48%, rgba(79, 220, 255, 0.16), transparent 46%),
-        linear-gradient(145deg, rgba(0, 0, 0, 0.72), rgba(2, 30, 48, 0.34) 44%, rgba(0, 0, 0, 0.72));
+        linear-gradient(180deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.45) 24%, transparent 52%),
+        radial-gradient(circle at 50% 48%, rgba(79, 220, 255, 0.1), transparent 46%),
+        linear-gradient(145deg, rgba(0, 0, 0, 0.5), rgba(2, 30, 48, 0.18) 44%, rgba(0, 0, 0, 0.48));
     }
 
     .phone::after {
@@ -143,7 +143,8 @@
 
     .section {
       border-radius: 18px;
-      background: linear-gradient(145deg, rgba(0, 7, 13, 0.32), rgba(3, 36, 48, 0.12));
+      background: linear-gradient(145deg, rgba(0, 7, 13, 0.18), rgba(3, 36, 48, 0.08));
+      border-color: rgba(255, 255, 255, 0.3);
       padding: 7px;
     }
 
@@ -196,11 +197,11 @@
     .off { color: rgba(255, 255, 255, 0.48); background: rgba(255, 255, 255, 0.12); }
 
     .drive {
-      height: 242px;
+      height: 326px;
     }
 
     .drive-pad {
-      height: 210px;
+      height: 292px;
       position: relative;
       display: grid;
       place-items: center;
@@ -208,8 +209,8 @@
 
     .hex {
       position: absolute;
-      width: 300px;
-      height: 160px;
+      width: 330px;
+      height: 205px;
       clip-path: polygon(10% 50%, 28% 0, 72% 0, 90% 50%, 72% 100%, 28% 100%);
       background: linear-gradient(145deg, rgba(0, 0, 0, 0.26), rgba(3, 43, 57, 0.18));
       border: 2px solid rgba(255, 189, 88, 0.36);
@@ -231,12 +232,12 @@
       text-shadow: 0 0 10px rgba(85, 220, 255, 0.7);
     }
 
-    .up { top: 6px; left: calc(50% - 44px); width: 88px; }
-    .ul { top: 47px; left: 51px; transform: rotate(-18deg); }
-    .ur { top: 47px; right: 51px; transform: rotate(18deg); }
-    .dl { bottom: 54px; left: 51px; transform: rotate(18deg); }
-    .down { bottom: 10px; left: calc(50% - 44px); width: 88px; }
-    .dr { bottom: 54px; right: 51px; transform: rotate(-18deg); }
+    .up { top: 8px; left: calc(50% - 47px); width: 94px; height: 56px; }
+    .ul { top: 74px; left: 23px; width: 86px; height: 56px; transform: rotate(-18deg); }
+    .ur { top: 74px; right: 23px; width: 86px; height: 56px; transform: rotate(18deg); }
+    .dl { bottom: 48px; left: 23px; width: 86px; height: 56px; transform: rotate(18deg); }
+    .down { bottom: 6px; left: calc(50% - 47px); width: 94px; height: 56px; }
+    .dr { bottom: 48px; right: 23px; width: 86px; height: 56px; transform: rotate(-18deg); }
 
     .center-dot {
       position: absolute;

@@ -210,7 +210,7 @@ enum R2D2Protocol {
 
     static let expressionGroups = [
         SequenceGroup(title: "Affection", ids: [260, 262, 263, 264, 265, 266, 267, 268, 269, 261], symbolName: "heart.fill"),
-        SequenceGroup(title: "Happy", ids: [274, 276, 277, 278, 279, 280, 369, 281, 282, 275], symbolName: "face.smiling"),
+        SequenceGroup(title: "Happy", ids: [274, 276, 277, 278, 279, 280, 281, 282, 275], symbolName: "face.smiling"),
         SequenceGroup(title: "Laughing", ids: [283, 285, 286, 287, 288, 289, 290, 291, 292, 284], symbolName: "quote.bubble.fill"),
         SequenceGroup(title: "Sad", ids: [293, 295, 296, 297, 298, 299, 300, 301, 302, 294], symbolName: "cloud.rain.fill"),
         SequenceGroup(title: "Surprise", ids: [303, 305, 306, 307, 473, 462, 463, 308, 309, 304], symbolName: "burst.fill"),
@@ -219,8 +219,8 @@ enum R2D2Protocol {
     ]
 
     static let danceAndAmbientGroups = [
-        SequenceGroup(title: "Dance", ids: [453, 454, 455, 456, 457, 458, 459, 460], symbolName: "music.note"),
-        SequenceGroup(title: "Music Dance", ids: Array(UInt16(419)...UInt16(434)), symbolName: "music.quarternote.3"),
+        SequenceGroup(title: "Dance", ids: Array(UInt16(419)...UInt16(434)), symbolName: "figure.walk.motion"),
+        SequenceGroup(title: "Excited Dance", ids: Array(UInt16(368)...UInt16(379)), symbolName: "sparkles"),
         SequenceGroup(title: "Songs", ids: Array(UInt16(453)...UInt16(460)), symbolName: "speaker.wave.2.fill"),
         SequenceGroup(title: "Bored", ids: Array(UInt16(360)...UInt16(367)), symbolName: "moon.zzz.fill"),
         SequenceGroup(title: "Hanging Out", ids: Array(UInt16(395)...UInt16(404)), symbolName: "sparkles"),

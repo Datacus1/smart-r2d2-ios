@@ -118,6 +118,14 @@ Start sequence:   17 TYPE LL HH
 Stop sequence:    18 FLAGS
 ```
 
+Useful high-level sequence ranges recovered from the APK enum names:
+
+```text
+Excited dance: 368-379
+Dance motion:  419-434
+Songs/music:   453-460
+```
+
 The Android APK's manual drive path stops with flag `18 14`. Direct opcode `14`
 depends on the toy's internal cam/selector position, so this app currently keeps
 using the safer recovered drive sequences for wheel movement.

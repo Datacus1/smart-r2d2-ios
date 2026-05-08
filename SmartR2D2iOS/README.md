@@ -119,12 +119,27 @@ Start sequence:   17 TYPE LL HH
 Stop sequence:    18 FLAGS
 ```
 
-Useful high-level sequence ranges recovered from the APK enum names:
+Useful high-level behavior sequence ranges recovered from the APK enum names:
 
 ```text
-Excited dance: 368-379
-Dance motion:  419-434
-Songs/music:   453-460
+Bored:              360-367
+Excited reaction:   368-379
+Force reaction:     380-383
+Freaked out:        384-390
+Going to sleep:     391-392
+Guard mode:         393-394
+Hanging out:        395-404
+Intruder alarm:     405-406
+Is that you:        407
+Look around:        408-417
+Mobile hangout:     418
+Music response:     419-434
+Obstacle:           435-444
+Relieved:           445-452
+Songs/music:        453-460
+Startled:           461-473
+Stationary hangout: 474
+Wakeup:             475-477
 ```
 
 There is no recovered Bluetooth power-on packet. The toy must already be awake

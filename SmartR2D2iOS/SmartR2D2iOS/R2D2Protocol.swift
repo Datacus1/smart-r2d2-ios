@@ -218,16 +218,24 @@ enum R2D2Protocol {
         SequenceGroup(title: "Talk", ids: [323, 310, 311, 312, 313, 314, 315, 316, 317, 413], symbolName: "bubble.left.and.bubble.right.fill")
     ]
 
-    static let danceAndAmbientGroups = [
-        SequenceGroup(title: "Dance", ids: Array(UInt16(419)...UInt16(434)), symbolName: "figure.walk.motion"),
-        SequenceGroup(title: "Excited Dance", ids: Array(UInt16(368)...UInt16(379)), symbolName: "sparkles"),
-        SequenceGroup(title: "Songs", ids: Array(UInt16(453)...UInt16(460)), symbolName: "speaker.wave.2.fill"),
+    static let behaviorGroups = [
         SequenceGroup(title: "Bored", ids: Array(UInt16(360)...UInt16(367)), symbolName: "moon.zzz.fill"),
+        SequenceGroup(title: "Excited Reaction", ids: Array(UInt16(368)...UInt16(379)), symbolName: "sparkles"),
+        SequenceGroup(title: "Force Reaction", ids: [380, 381, 382, 383], symbolName: "hand.raised.fill"),
+        SequenceGroup(title: "Freaked Out", ids: Array(UInt16(384)...UInt16(390)), symbolName: "exclamationmark.triangle.fill"),
+        SequenceGroup(title: "Going To Sleep", ids: [391, 392], symbolName: "moon.zzz.fill"),
+        SequenceGroup(title: "Guard Mode", ids: [393, 394], symbolName: "shield.fill"),
         SequenceGroup(title: "Hanging Out", ids: Array(UInt16(395)...UInt16(404)), symbolName: "sparkles"),
+        SequenceGroup(title: "Intruder Alarm", ids: [405, 406], symbolName: "alarm.fill"),
+        SequenceGroup(title: "Is That You", ids: [407], symbolName: "questionmark.bubble.fill"),
         SequenceGroup(title: "Look Around", ids: Array(UInt16(408)...UInt16(417)), symbolName: "eye.fill"),
+        SequenceGroup(title: "Mobile Hangout", ids: [418], symbolName: "figure.walk"),
+        SequenceGroup(title: "Music Response", ids: Array(UInt16(419)...UInt16(434)), symbolName: "waveform"),
         SequenceGroup(title: "Obstacle", ids: Array(UInt16(435)...UInt16(444)), symbolName: "exclamationmark.octagon.fill"),
         SequenceGroup(title: "Relieved", ids: Array(UInt16(445)...UInt16(452)), symbolName: "checkmark.circle.fill"),
+        SequenceGroup(title: "Songs", ids: Array(UInt16(453)...UInt16(460)), symbolName: "speaker.wave.2.fill"),
         SequenceGroup(title: "Startled", ids: Array(UInt16(461)...UInt16(473)), symbolName: "bolt.fill"),
+        SequenceGroup(title: "Stationary Hangout", ids: [474], symbolName: "pause.circle.fill"),
         SequenceGroup(title: "Wakeup", ids: Array(UInt16(475)...UInt16(477)), symbolName: "sun.max.fill")
     ]
 

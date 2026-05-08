@@ -446,7 +446,7 @@ private enum CommandPanel: String, CaseIterable, Identifiable {
     case lights
     case sounds
     case expressions
-    case dances
+    case behaviors
     case utility
     case advanced
 
@@ -459,7 +459,7 @@ private enum CommandPanel: String, CaseIterable, Identifiable {
         case .lights: return "Lights"
         case .sounds: return "Sounds"
         case .expressions: return "Moods"
-        case .dances: return "Dance"
+        case .behaviors: return "Behavior"
         case .utility: return "Utility"
         case .advanced: return "Catalog"
         }
@@ -472,7 +472,7 @@ private enum CommandPanel: String, CaseIterable, Identifiable {
         case .lights: return "lightbulb.fill"
         case .sounds: return "speaker.wave.2.fill"
         case .expressions: return "face.smiling"
-        case .dances: return "music.note"
+        case .behaviors: return "sparkles"
         case .utility: return "viewfinder"
         case .advanced: return "number"
         }
@@ -1158,7 +1158,7 @@ private struct CompactActionDock: View {
     let action: (CommandPanel) -> Void
     let moreAction: () -> Void
 
-    private let primaryPanels: [CommandPanel] = [.sounds, .expressions, .dances, .advanced]
+    private let primaryPanels: [CommandPanel] = [.sounds, .expressions, .behaviors, .advanced]
 
     var body: some View {
         if axis == .vertical {
@@ -1569,9 +1569,9 @@ private struct CommandPanelSheet: View {
                 }
             }
 
-        case .dances:
-            Section("Dances and Ambient") {
-                ForEach(R2D2Protocol.danceAndAmbientGroups) { group in
+        case .behaviors:
+            Section("Behavior Routines") {
+                ForEach(R2D2Protocol.behaviorGroups) { group in
                     groupRow(group)
                 }
             }

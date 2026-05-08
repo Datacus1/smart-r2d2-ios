@@ -127,12 +127,12 @@ struct ContentView: View {
                     title: "Forward",
                     systemImage: "arrow.up",
                     isEnabled: ble.isReady && driveEnabled,
-                    start: { ble.startMotor(.forward) },
-                    stop: { ble.stopMotion() }
+                    start: { ble.startDrive(.forward) },
+                    stop: { ble.stopDrive() }
                 )
 
                 ControlButton(title: "Stop", systemImage: "stop.fill", isEnabled: ble.isReady) {
-                    ble.stopMotion()
+                    ble.stopDrive()
                 }
                 .tint(.red)
 
@@ -140,8 +140,8 @@ struct ContentView: View {
                     title: "Back",
                     systemImage: "arrow.down",
                     isEnabled: ble.isReady && driveEnabled,
-                    start: { ble.startMotor(.backward) },
-                    stop: { ble.stopMotion() }
+                    start: { ble.startDrive(.backward) },
+                    stop: { ble.stopDrive() }
                 )
             }
         }

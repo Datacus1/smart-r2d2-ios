@@ -38,10 +38,13 @@ enum R2D2Protocol {
         }
     }
 
-    enum MotorDirection: UInt8 {
-        case stop = 0
-        case forward = 1
-        case backward = 2
+    enum DriveDirection: UInt16 {
+        case forward = 1000
+        case backward = 1001
+        case forwardRight = 1002
+        case forwardLeft = 1003
+        case backwardRight = 1004
+        case backwardLeft = 1005
     }
 
     enum SequenceType: UInt8 {
@@ -98,8 +101,12 @@ enum R2D2Protocol {
         Data([0x13, position.rawValue])
     }
 
-    static func motor(_ direction: MotorDirection) -> Data {
-        Data([0x14, direction.rawValue])
+    static func drive(_ direction: DriveDirection) -> Data {
+        startSequence(type: .motor, index: direction.rawValue)
+    }
+
+    static var stopDrive: Data {
+        stopSequences(flags: StopFlags.motorSequence | StopFlags.motor1)
     }
 
     static func led(_ color: LEDColor) -> Data {

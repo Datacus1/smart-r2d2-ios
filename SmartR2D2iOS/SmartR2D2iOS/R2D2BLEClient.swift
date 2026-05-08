@@ -64,6 +64,8 @@ final class R2D2BLEClient: NSObject, ObservableObject {
     private var radioNotifyCharacteristic: CBCharacteristic?
     private var radioWriteCharacteristic: CBCharacteristic?
     private var keepAliveTimer: Timer?
+    private var driveTimer: Timer?
+    private var activeDriveDirection: R2D2Protocol.DriveDirection?
     private var wantsConnectionWhenFound = false
 
     var isReady: Bool {
@@ -133,6 +135,7 @@ final class R2D2BLEClient: NSObject, ObservableObject {
 
     func disconnect() {
         wantsConnectionWhenFound = false
+        stopDriveTimer()
         stopKeepAlive()
         sendRaw(R2D2Protocol.endAppMode)
 
@@ -151,13 +154,22 @@ final class R2D2BLEClient: NSObject, ObservableObject {
         sendCommand(R2D2Protocol.led(color))
     }
 
-    func startMotor(_ direction: R2D2Protocol.MotorDirection) {
-        sendCommand(R2D2Protocol.motor(direction))
+    func startDrive(_ direction: R2D2Protocol.DriveDirection) {
+        activeDriveDirection = direction
+        sendCommand(R2D2Protocol.drive(direction))
+
+        driveTimer?.invalidate()
+        driveTimer = Timer.scheduledTimer(withTimeInterval: 0.65, repeats: true) { [weak self] _ in
+            guard let self, self.activeDriveDirection == direction else {
+                return
+            }
+            self.sendCommand(R2D2Protocol.drive(direction))
+        }
     }
 
-    func stopMotion() {
-        sendCommand(R2D2Protocol.motor(.stop))
-        sendCommand(R2D2Protocol.stopSequences(flags: R2D2Protocol.StopFlags.motorSequence | R2D2Protocol.StopFlags.motor2))
+    func stopDrive() {
+        stopDriveTimer()
+        sendCommand(R2D2Protocol.stopDrive)
     }
 
     func playSound(_ sound: R2D2Protocol.Sound) {
@@ -216,6 +228,12 @@ final class R2D2BLEClient: NSObject, ObservableObject {
     private func stopKeepAlive() {
         keepAliveTimer?.invalidate()
         keepAliveTimer = nil
+    }
+
+    private func stopDriveTimer() {
+        activeDriveDirection = nil
+        driveTimer?.invalidate()
+        driveTimer = nil
     }
 
     private func markReadyIfPossible() {
@@ -315,6 +333,7 @@ extension R2D2BLEClient: CBCentralManagerDelegate {
     }
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        stopDriveTimer()
         stopKeepAlive()
         resetCharacteristics()
         targetPeripheral = nil

@@ -8,7 +8,7 @@ Native SwiftUI/CoreBluetooth starter app for controlling a Hasbro Smart R2-D2 to
 - Connects to the control characteristics found in the Android APK and confirmed with nRF Connect.
 - Subscribes to main and radio notifications.
 - Sends the recovered keepalive packet every 2 seconds.
-- Includes first-pass controls for head position, LED color, basic motor direction, several audio playlists, stop audio, stop motion, and toy sleep.
+- Includes first-pass controls for head position, LED color, recovered drive sequences, several audio playlists, stop audio, stop drive, and toy sleep.
 
 ## Opening In Xcode
 
@@ -39,7 +39,7 @@ an Apple ID and the usual iOS trust/developer-mode steps.
 ## First Test Pass
 
 1. Turn the toy on.
-2. Keep the drive wheels lifted or physically blocked for the first motor test.
+2. Keep the drive wheels lifted or physically blocked for the first drive test.
 3. Tap `Scan`.
 4. Connect to `2ndHeroD`.
 5. Try `Lights` and `Head` before `Drive`.
@@ -70,6 +70,9 @@ LED off:                15 00 00
 Head right:             13 00
 Head center:            13 01
 Head left:              13 02
+Drive forward:          17 01 E8 03
+Drive backward:         17 01 E9 03
+Stop drive:             18 0C
 HL rotate head left:    17 02 6A 00
 HL rotate head right:   17 02 6B 00
 Stop all:               18 3F
@@ -97,9 +100,9 @@ End app mode:     50 8C
 Head right:       13 00
 Head center:      13 01
 Head left:        13 02
-Motor stop:       14 00
-Motor forward:    14 01
-Motor backward:   14 02
+Drive forward:    17 01 E8 03
+Drive backward:   17 01 E9 03
+Stop drive:       18 0C
 LED red:          15 FF 00
 LED blue:         15 00 FF
 LED off:          15 00 00
@@ -107,3 +110,6 @@ Play playlist N:  10 LL HH
 Start sequence:   17 TYPE LL HH
 Stop sequence:    18 FLAGS
 ```
+
+Opcode `14` is labeled `MOTOR2_RUN` in the Android APK and appears to move the
+head on this toy, so the app avoids it for wheel drive.

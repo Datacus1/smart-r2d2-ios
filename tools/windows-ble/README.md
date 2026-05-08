@@ -36,7 +36,7 @@ python .\tools\windows-ble\r2d2_ble_test.py sound whistle
 Lift the toy or block the wheels first.
 
 ```powershell
-python .\tools\windows-ble\r2d2_ble_test.py motor forward --duration 0.5 --yes-drive
+python .\tools\windows-ble\r2d2_ble_test.py drive forward --duration 0.5 --yes-drive
 python .\tools\windows-ble\r2d2_ble_test.py stop
 ```
 
@@ -53,3 +53,6 @@ and sends keepalive every 2 seconds while connected:
 ```text
 50 8D
 ```
+
+Drive uses the recovered APK motor sequence packets, not direct opcode `14`.
+On this toy, `14` appears to control the head motor.

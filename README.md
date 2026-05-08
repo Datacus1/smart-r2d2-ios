@@ -7,6 +7,7 @@ The app uses SwiftUI and CoreBluetooth to connect to the toy's BLE service and s
 - keepalive/session packet
 - blue/off LED control
 - head left/center/right
+- wheel drive forward/backward sequence control
 
 The iOS app source is in `SmartR2D2iOS/`. A GitHub Actions workflow can build an unsigned IPA artifact for sideload testing.
 

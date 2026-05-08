@@ -1,5 +1,7 @@
 # Local reverse-engineering/reference files
 *.apk
+apk_extract/
+sideloadlydaemon.log
 
 # Xcode and Swift
 DerivedData/

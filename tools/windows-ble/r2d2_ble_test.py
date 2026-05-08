@@ -43,10 +43,10 @@ HEAD = {
     "right": bytes([0x13, 0x00]),
 }
 
-MOTOR = {
-    "stop": bytes([0x14, 0x00]),
-    "forward": bytes([0x14, 0x01]),
-    "backward": bytes([0x14, 0x02]),
+DRIVE = {
+    "stop": bytes([0x18, 0x0C]),
+    "forward": bytes([0x17, 0x01, 0xE8, 0x03]),
+    "backward": bytes([0x17, 0x01, 0xE9, 0x03]),
 }
 
 LED = {
@@ -195,10 +195,10 @@ async def run_command(args: argparse.Namespace) -> None:
                 print(f"TX {hex_bytes(packet)}")
                 await asyncio.sleep(args.gap)
 
-            if args.command == "motor" and args.motor_direction != "stop":
+            if args.command == "drive" and args.drive_direction != "stop":
                 await asyncio.sleep(args.duration)
-                await client.write_gatt_char(WRITE_UUID, MOTOR["stop"], response=False)
-                print(f"TX auto-stop {hex_bytes(MOTOR['stop'])}")
+                await client.write_gatt_char(WRITE_UUID, DRIVE["stop"], response=False)
+                print(f"TX auto-stop {hex_bytes(DRIVE['stop'])}")
         finally:
             stop_keepalive.set()
             await keepalive_task
@@ -210,16 +210,16 @@ def build_packets(args: argparse.Namespace) -> list[bytes]:
             return [HEAD[args.position]]
         case "led":
             return [LED[args.color]]
-        case "motor":
-            if args.motor_direction != "stop" and not args.yes_drive:
-                raise SystemExit("Motor commands require --yes-drive. Lift/block the toy first.")
-            return [MOTOR[args.motor_direction]]
+        case "drive":
+            if args.drive_direction != "stop" and not args.yes_drive:
+                raise SystemExit("Drive commands require --yes-drive. Lift/block the toy first.")
+            return [DRIVE[args.drive_direction]]
         case "sound":
             return [playlist_packet(SOUNDS[args.sound])]
         case "playlist":
             return [playlist_packet(args.index)]
         case "stop":
-            return [MOTOR["stop"], stop_sequences(63)]
+            return [DRIVE["stop"], stop_sequences(63)]
         case "sleep":
             return [KEEPALIVE, POWER_DOWN]
         case "raw":
@@ -244,10 +244,10 @@ async def main() -> None:
     led = subparsers.add_parser("led", help="Set the red/blue logic LED.")
     led.add_argument("color", choices=sorted(LED))
 
-    motor = subparsers.add_parser("motor", help="Run the drive motor briefly.")
-    motor.add_argument("motor_direction", choices=sorted(MOTOR))
-    motor.add_argument("--duration", type=float, default=0.5)
-    motor.add_argument("--yes-drive", action="store_true", help="Required for forward/backward.")
+    drive = subparsers.add_parser("drive", help="Run the wheel drive sequence briefly.")
+    drive.add_argument("drive_direction", choices=sorted(DRIVE))
+    drive.add_argument("--duration", type=float, default=0.5)
+    drive.add_argument("--yes-drive", action="store_true", help="Required for forward/backward.")
 
     sound = subparsers.add_parser("sound", help="Play a known audio playlist.")
     sound.add_argument("sound", choices=sorted(SOUNDS))

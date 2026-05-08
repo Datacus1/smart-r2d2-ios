@@ -97,6 +97,24 @@ enum R2D2Protocol {
         }
     }
 
+    enum Expression: UInt16, CaseIterable, Identifiable {
+        case happy = 274
+        case sad = 293
+        case surprise = 303
+        case music = 453
+
+        var id: UInt16 { rawValue }
+
+        var symbolName: String {
+            switch self {
+            case .happy: return "face.smiling"
+            case .sad: return "cloud.rain.fill"
+            case .surprise: return "burst.fill"
+            case .music: return "music.note"
+            }
+        }
+    }
+
     static func head(_ position: HeadPosition) -> Data {
         Data([0x13, position.rawValue])
     }
@@ -116,6 +134,10 @@ enum R2D2Protocol {
 
     static func playPlaylist(_ index: UInt16) -> Data {
         Data([0x10, UInt8(index & 0x00FF), UInt8((index >> 8) & 0x00FF)])
+    }
+
+    static func expression(_ expression: Expression) -> Data {
+        startSequence(type: .highLevel, index: expression.rawValue)
     }
 
     static func startSequence(type: SequenceType, index: UInt16) -> Data {

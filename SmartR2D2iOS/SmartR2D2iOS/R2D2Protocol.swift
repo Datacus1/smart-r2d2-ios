@@ -41,10 +41,10 @@ enum R2D2Protocol {
     enum DriveDirection: UInt16, CaseIterable, Identifiable {
         case forward = 1000
         case backward = 1001
-        case forwardRight = 1002
-        case forwardLeft = 1003
-        case backwardRight = 1004
-        case backwardLeft = 1005
+        case forwardLeft = 1002
+        case forwardRight = 1003
+        case backwardLeft = 1004
+        case backwardRight = 1005
 
         var id: UInt16 { rawValue }
 

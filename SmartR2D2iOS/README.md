@@ -73,8 +73,8 @@ Head center:            13 01
 Head left:              13 02
 Drive forward:          17 01 E8 03
 Drive backward:         17 01 E9 03
-Drive left:             17 01 EA 03
-Drive right:            17 01 EB 03
+Drive forward left:     17 01 EA 03
+Drive forward right:    17 01 EB 03
 Stop drive:             18 14
 HL rotate head left:    17 02 6A 00
 HL rotate head right:   17 02 6B 00
@@ -105,8 +105,8 @@ Head center:      13 01
 Head left:        13 02
 Drive forward:        17 01 E8 03
 Drive backward:       17 01 E9 03
-Drive left:           17 01 EA 03
-Drive right:          17 01 EB 03
+Drive forward left:   17 01 EA 03
+Drive forward right:  17 01 EB 03
 Drive backward left:  17 01 EC 03
 Drive backward right: 17 01 ED 03
 Stop drive:           18 14

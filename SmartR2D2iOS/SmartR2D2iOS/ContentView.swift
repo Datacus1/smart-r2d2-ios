@@ -85,6 +85,7 @@ struct ContentView: View {
 
             HStack(spacing: 12) {
                 MainControlPanel(
+                    layout: .landscape,
                     isReady: ble.isReady,
                     lastCommand: ble.lastCommandSummary,
                     activeDrive: ble.activeDriveSummary,
@@ -110,13 +111,22 @@ struct ContentView: View {
     }
 
     private var portraitConsole: some View {
-        VStack(spacing: 12) {
-            ZStack {
+        ZStack(alignment: .top) {
+            VStack {
                 R2D2BodyView(isReady: ble.isReady)
-                    .opacity(0.24)
+                    .opacity(0.13)
+                    .saturation(0.72)
+                    .frame(maxWidth: 340)
+                    .offset(y: 210)
                     .allowsHitTesting(false)
 
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            VStack(spacing: 10) {
                 MainControlPanel(
+                    layout: .portrait,
                     isReady: ble.isReady,
                     lastCommand: ble.lastCommandSummary,
                     activeDrive: ble.activeDriveSummary,
@@ -125,15 +135,26 @@ struct ContentView: View {
                     stopDrive: { ble.stopDrive() },
                     setLED: { ble.setLED($0) }
                 )
-            }
+                .frame(maxWidth: .infinity)
 
-            CompactActionDock(axis: .horizontal) { panel in
-                activeCommandPanel = panel
-            } moreAction: {
-                isActionDrawerPresented = true
+                Spacer(minLength: 8)
+
+                CompactActionDock(axis: .horizontal) { panel in
+                    activeCommandPanel = panel
+                } moreAction: {
+                    isActionDrawerPresented = true
+                }
+                .frame(maxWidth: .infinity)
             }
+            .padding(.top, 6)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
     }
+}
+
+private enum RemoteControlLayout {
+    case landscape
+    case portrait
 }
 
 private struct R2D2Stage<Content: View>: View {
@@ -159,6 +180,7 @@ private struct R2D2Stage<Content: View>: View {
 }
 
 private struct MainControlPanel: View {
+    let layout: RemoteControlLayout
     let isReady: Bool
     let lastCommand: String
     let activeDrive: String?
@@ -168,17 +190,50 @@ private struct MainControlPanel: View {
     let setLED: (R2D2Protocol.LEDColor) -> Void
 
     var body: some View {
+        if layout == .portrait {
+            portraitBody
+        } else {
+            landscapeBody
+        }
+    }
+
+    private var portraitBody: some View {
+        VStack(spacing: 8) {
+            ControlSection(title: "Head") {
+                headControls
+            }
+            .frame(height: 72)
+
+            ControlSection(title: "Lights") {
+                LightDock(isEnabled: isReady, action: setLED)
+            }
+            .frame(height: 72)
+
+            ControlSection(title: "Drive") {
+                DrivePad(
+                    isEnabled: isReady,
+                    activeDrive: activeDrive,
+                    start: startDrive,
+                    stop: stopDrive
+                )
+                .frame(maxWidth: .infinity, height: 146)
+            }
+            .frame(height: 176)
+
+            CommandStatusStrip(
+                isReady: isReady,
+                lastCommand: lastCommand,
+                activeDrive: activeDrive
+            )
+            .frame(height: 38)
+        }
+    }
+
+    private var landscapeBody: some View {
         VStack(spacing: 5) {
             HStack(spacing: 8) {
                 ControlSection(title: "Head") {
-                    HStack(spacing: 8) {
-                        ForEach(R2D2Protocol.HeadPosition.allCases) { position in
-                            HeadButton(position: position, isEnabled: isReady) {
-                                setHead(position)
-                            }
-                            .frame(maxWidth: .infinity, minHeight: 50, maxHeight: 50)
-                        }
-                    }
+                    headControls
                 }
                 .frame(height: 74)
 
@@ -205,6 +260,17 @@ private struct MainControlPanel: View {
                 activeDrive: activeDrive
             )
             .frame(height: 38)
+        }
+    }
+
+    private var headControls: some View {
+        HStack(spacing: 8) {
+            ForEach(R2D2Protocol.HeadPosition.allCases) { position in
+                HeadButton(position: position, isEnabled: isReady) {
+                    setHead(position)
+                }
+                .frame(maxWidth: .infinity, minHeight: 50, maxHeight: 50)
+            }
         }
     }
 }
@@ -1043,7 +1109,7 @@ private struct CompactActionDock: View {
                     .stroke(Color.white.opacity(0.12), lineWidth: 1)
             }
         } else {
-            HStack(spacing: 10) {
+            HStack(spacing: 6) {
                 ForEach(primaryPanels) { panel in
                     compactButton(panel)
                 }
@@ -1066,7 +1132,7 @@ private struct CompactActionDock: View {
                     .minimumScaleFactor(0.7)
             }
             .foregroundStyle(.white.opacity(0.92))
-            .frame(width: axis == .vertical ? 92 : 78, height: 48)
+            .frame(width: axis == .vertical ? 92 : 64, height: 48)
             .background(
                 LinearGradient(
                     colors: [
@@ -1099,7 +1165,7 @@ private struct CompactActionDock: View {
                     .font(.system(size: 8, weight: .black))
             }
             .foregroundStyle(Color.cyan.opacity(0.95))
-            .frame(width: axis == .vertical ? 92 : 78, height: 48)
+            .frame(width: axis == .vertical ? 92 : 64, height: 48)
             .background(Color.black.opacity(0.24), in: RoundedRectangle(cornerRadius: 15))
             .overlay {
                 RoundedRectangle(cornerRadius: 15)

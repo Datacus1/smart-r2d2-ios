@@ -47,6 +47,10 @@ DRIVE = {
     "stop": bytes([0x18, 0x0C]),
     "forward": bytes([0x17, 0x01, 0xE8, 0x03]),
     "backward": bytes([0x17, 0x01, 0xE9, 0x03]),
+    "right": bytes([0x17, 0x01, 0xEA, 0x03]),
+    "left": bytes([0x17, 0x01, 0xEB, 0x03]),
+    "backward-right": bytes([0x17, 0x01, 0xEC, 0x03]),
+    "backward-left": bytes([0x17, 0x01, 0xED, 0x03]),
 }
 
 LED = {
@@ -247,7 +251,7 @@ async def main() -> None:
     drive = subparsers.add_parser("drive", help="Run the wheel drive sequence briefly.")
     drive.add_argument("drive_direction", choices=sorted(DRIVE))
     drive.add_argument("--duration", type=float, default=0.5)
-    drive.add_argument("--yes-drive", action="store_true", help="Required for forward/backward.")
+    drive.add_argument("--yes-drive", action="store_true", help="Required for any movement.")
 
     sound = subparsers.add_parser("sound", help="Play a known audio playlist.")
     sound.add_argument("sound", choices=sorted(SOUNDS))

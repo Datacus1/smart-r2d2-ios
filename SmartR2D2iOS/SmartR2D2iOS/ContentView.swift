@@ -122,7 +122,7 @@ struct ContentView: View {
             Toggle("Enable", isOn: $driveEnabled)
                 .toggleStyle(.switch)
 
-            HStack(spacing: 12) {
+            VStack(spacing: 10) {
                 MomentaryCommandButton(
                     title: "Forward",
                     systemImage: "arrow.up",
@@ -131,10 +131,28 @@ struct ContentView: View {
                     stop: { ble.stopDrive() }
                 )
 
-                ControlButton(title: "Stop", systemImage: "stop.fill", isEnabled: ble.isReady) {
-                    ble.stopDrive()
+                HStack(spacing: 12) {
+                    MomentaryCommandButton(
+                        title: "Left",
+                        systemImage: "arrow.left",
+                        isEnabled: ble.isReady && driveEnabled,
+                        start: { ble.startDrive(.forwardLeft) },
+                        stop: { ble.stopDrive() }
+                    )
+
+                    ControlButton(title: "Stop", systemImage: "stop.fill", isEnabled: ble.isReady) {
+                        ble.stopDrive()
+                    }
+                    .tint(.red)
+
+                    MomentaryCommandButton(
+                        title: "Right",
+                        systemImage: "arrow.right",
+                        isEnabled: ble.isReady && driveEnabled,
+                        start: { ble.startDrive(.forwardRight) },
+                        stop: { ble.stopDrive() }
+                    )
                 }
-                .tint(.red)
 
                 MomentaryCommandButton(
                     title: "Back",

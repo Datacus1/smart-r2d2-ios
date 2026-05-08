@@ -72,6 +72,8 @@ Head center:            13 01
 Head left:              13 02
 Drive forward:          17 01 E8 03
 Drive backward:         17 01 E9 03
+Drive right:            17 01 EA 03
+Drive left:             17 01 EB 03
 Stop drive:             18 0C
 HL rotate head left:    17 02 6A 00
 HL rotate head right:   17 02 6B 00
@@ -100,9 +102,13 @@ End app mode:     50 8C
 Head right:       13 00
 Head center:      13 01
 Head left:        13 02
-Drive forward:    17 01 E8 03
-Drive backward:   17 01 E9 03
-Stop drive:       18 0C
+Drive forward:        17 01 E8 03
+Drive backward:       17 01 E9 03
+Drive right:          17 01 EA 03
+Drive left:           17 01 EB 03
+Drive backward right: 17 01 EC 03
+Drive backward left:  17 01 ED 03
+Stop drive:           18 0C
 LED red:          15 FF 00
 LED blue:         15 00 FF
 LED off:          15 00 00

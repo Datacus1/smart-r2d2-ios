@@ -37,6 +37,8 @@ Lift the toy or block the wheels first.
 
 ```powershell
 python .\tools\windows-ble\r2d2_ble_test.py drive forward --duration 0.5 --yes-drive
+python .\tools\windows-ble\r2d2_ble_test.py drive left --duration 0.5 --yes-drive
+python .\tools\windows-ble\r2d2_ble_test.py drive right --duration 0.5 --yes-drive
 python .\tools\windows-ble\r2d2_ble_test.py stop
 ```
 

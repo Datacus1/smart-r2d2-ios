@@ -78,8 +78,8 @@ struct ContentView: View {
                 .frame(width: 222, height: 222)
                 .offset(x: 8, y: 72)
 
-                EmergencyStopButton(isEnabled: ble.isReady) {
-                    ble.stopDrive()
+                LightDock(isEnabled: ble.isReady) { color in
+                    ble.setLED(color)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 .padding(.bottom, 8)
@@ -116,8 +116,8 @@ struct ContentView: View {
                 .frame(width: 236, height: 236)
                 .offset(y: 96)
 
-                EmergencyStopButton(isEnabled: ble.isReady) {
-                    ble.stopDrive()
+                LightDock(isEnabled: ble.isReady) { color in
+                    ble.setLED(color)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 .padding(.bottom, 12)
@@ -434,26 +434,18 @@ private struct DrivePad: View {
                 .frame(width: 76, height: 120)
                 .offset(x: 67)
 
-            Button {
-                Haptics.tap()
-                stop()
-            } label: {
-                Diamond()
-                    .fill(Color(red: 0.04, green: 0.22, blue: 0.34).opacity(isEnabled ? 0.82 : 0.36))
-                    .overlay {
-                        Diamond()
-                            .stroke(Color.cyan.opacity(isEnabled ? 0.85 : 0.25), lineWidth: 2)
-                    }
-                    .overlay {
-                        Image(systemName: "stop.fill")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundStyle(.white.opacity(isEnabled ? 0.95 : 0.35))
-                    }
-            }
-            .buttonStyle(.plain)
-            .disabled(!isEnabled)
+            Diamond()
+                .fill(Color(red: 0.04, green: 0.22, blue: 0.34).opacity(isEnabled ? 0.72 : 0.28))
+                .overlay {
+                    Diamond()
+                        .stroke(Color.cyan.opacity(isEnabled ? 0.72 : 0.22), lineWidth: 2)
+                }
+                .overlay {
+                    Circle()
+                        .fill(Color.white.opacity(isEnabled ? 0.88 : 0.28))
+                        .frame(width: 10, height: 10)
+                }
             .frame(width: 54, height: 54)
-            .accessibilityLabel("Stop movement")
         }
     }
 }
@@ -736,33 +728,58 @@ private struct TopControlBar: View {
     }
 }
 
-private struct EmergencyStopButton: View {
+private struct LightDock: View {
     let isEnabled: Bool
-    let action: () -> Void
+    let action: (R2D2Protocol.LEDColor) -> Void
 
     var body: some View {
-        Button {
-            Haptics.press()
-            action()
-        } label: {
-            HStack(spacing: 7) {
-                Image(systemName: "stop.fill")
-                    .font(.system(size: 13, weight: .black))
-                Text("STOP")
-                    .font(.system(size: 13, weight: .black))
+        HStack(spacing: 8) {
+            ForEach([R2D2Protocol.LEDColor.blue, .red, .off]) { color in
+                Button {
+                    Haptics.tap()
+                    action(color)
+                } label: {
+                    VStack(spacing: 4) {
+                        Circle()
+                            .fill(lightColor(for: color).opacity(isEnabled ? 1 : 0.3))
+                            .frame(width: 13, height: 13)
+                            .overlay {
+                                Circle()
+                                    .stroke(Color.white.opacity(color == .off ? 0.72 : 0.18), lineWidth: 1)
+                            }
+                            .shadow(color: lightColor(for: color).opacity(isEnabled ? 0.75 : 0), radius: 5)
+
+                        Text(color.rawValue.uppercased())
+                            .font(.system(size: 9, weight: .black))
+                            .lineLimit(1)
+                    }
+                    .foregroundStyle(.white.opacity(isEnabled ? 0.96 : 0.35))
+                    .frame(width: 58, height: 48)
+                    .background(Color(red: 0.02, green: 0.13, blue: 0.22).opacity(0.86), in: RoundedRectangle(cornerRadius: 14))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(Color.cyan.opacity(isEnabled ? 0.62 : 0.2), lineWidth: 1.3)
+                    }
+                }
+                .buttonStyle(.plain)
+                .disabled(!isEnabled)
+                .accessibilityLabel("\(color.rawValue) light")
             }
-            .foregroundStyle(.white.opacity(isEnabled ? 1 : 0.38))
-            .frame(width: 106, height: 44)
-            .background(Color(red: 0.28, green: 0.02, blue: 0.04).opacity(isEnabled ? 0.9 : 0.42), in: RoundedRectangle(cornerRadius: 14))
-            .overlay {
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(Color.red.opacity(isEnabled ? 0.72 : 0.22), lineWidth: 1.5)
-            }
-            .shadow(color: Color.red.opacity(isEnabled ? 0.36 : 0), radius: 8)
         }
-        .buttonStyle(.plain)
-        .disabled(!isEnabled)
-        .accessibilityLabel("Emergency stop")
+        .padding(8)
+        .background(Color.black.opacity(0.24), in: RoundedRectangle(cornerRadius: 18))
+        .overlay {
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(Color.cyan.opacity(isEnabled ? 0.3 : 0.12), lineWidth: 1)
+        }
+    }
+
+    private func lightColor(for color: R2D2Protocol.LEDColor) -> Color {
+        switch color {
+        case .blue: return .cyan
+        case .red: return .red
+        case .off: return Color.white.opacity(0.18)
+        }
     }
 }
 

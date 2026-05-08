@@ -72,9 +72,9 @@ Head center:            13 01
 Head left:              13 02
 Drive forward:          17 01 E8 03
 Drive backward:         17 01 E9 03
-Drive right:            17 01 EA 03
-Drive left:             17 01 EB 03
-Stop drive:             18 0C
+Drive left:             17 01 EA 03
+Drive right:            17 01 EB 03
+Stop drive:             18 14
 HL rotate head left:    17 02 6A 00
 HL rotate head right:   17 02 6B 00
 Stop all:               18 3F
@@ -104,11 +104,11 @@ Head center:      13 01
 Head left:        13 02
 Drive forward:        17 01 E8 03
 Drive backward:       17 01 E9 03
-Drive right:          17 01 EA 03
-Drive left:           17 01 EB 03
-Drive backward right: 17 01 EC 03
-Drive backward left:  17 01 ED 03
-Stop drive:           18 0C
+Drive left:           17 01 EA 03
+Drive right:          17 01 EB 03
+Drive backward left:  17 01 EC 03
+Drive backward right: 17 01 ED 03
+Stop drive:           18 14
 LED red:          15 FF 00
 LED blue:         15 00 FF
 LED off:          15 00 00
@@ -117,5 +117,6 @@ Start sequence:   17 TYPE LL HH
 Stop sequence:    18 FLAGS
 ```
 
-Opcode `14` is labeled `MOTOR2_RUN` in the Android APK and appears to move the
-head on this toy, so the app avoids it for wheel drive.
+The Android APK's manual drive path stops with flag `18 14`. Direct opcode `14`
+depends on the toy's internal cam/selector position, so this app currently keeps
+using the safer recovered drive sequences for wheel movement.

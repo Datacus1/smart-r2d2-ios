@@ -56,5 +56,5 @@ and sends keepalive every 2 seconds while connected:
 50 8D
 ```
 
-Drive uses the recovered APK motor sequence packets, not direct opcode `14`.
-On this toy, `14` appears to control the head motor.
+Drive uses recovered APK motor sequence packets, and stop uses the APK's
+manual-drive stop flag `18 14`.

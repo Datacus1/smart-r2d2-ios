@@ -22,6 +22,7 @@ jobs:
       - name: Build app without signing
         run: |
           set -euo pipefail
+          set +e
           xcodebuild \
             -project SmartR2D2iOS/SmartR2D2iOS.xcodeproj \
             -scheme SmartR2D2iOS \
@@ -31,7 +32,15 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            build
+            build 2>&1 | tee xcodebuild.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            grep -E "error:|ContentView.swift|SwiftCompile|SwiftEmitModule" xcodebuild.log | tail -n 80 | while IFS= read -r line; do
+              echo "::error::$line"
+            done
+          fi
+          exit "$status"
 
       - name: Package unsigned IPA
         run: |

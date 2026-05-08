@@ -1735,18 +1735,18 @@ private struct DiagnosticsConsole: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Power") {
+                Section("Connection") {
                     Button {
                         ble.connectBestMatch()
                     } label: {
-                        Label("Turn On / Connect", systemImage: "power.circle.fill")
+                        Label("Scan / Connect", systemImage: "dot.radiowaves.left.and.right")
                     }
                     .disabled(ble.isReady || ble.isScanning)
 
                     Button(role: .destructive) {
                         ble.powerDownAndDisconnect()
                     } label: {
-                        Label("Turn Off / Disconnect", systemImage: "power.circle")
+                        Label("Power Down / Disconnect", systemImage: "power.circle")
                     }
                 }
 

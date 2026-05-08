@@ -9,8 +9,8 @@ Native SwiftUI/CoreBluetooth starter app for controlling a Hasbro Smart R2-D2 to
 - Subscribes to main and radio notifications.
 - Sends the recovered keepalive packet every 2 seconds.
 - Includes an old-app-style drive console with head controls, six-way drive,
-  main-screen LED control, action catalogs, diagnostics, and explicit
-  connect/power-down controls.
+  main-screen LED control, action catalogs, diagnostics, and explicit scan,
+  connect, power-down, and disconnect controls.
 
 ## Opening In Xcode
 
@@ -126,6 +126,10 @@ Excited dance: 368-379
 Dance motion:  419-434
 Songs/music:   453-460
 ```
+
+There is no recovered Bluetooth power-on packet. The toy must already be awake
+and advertising before the app can scan or connect; `50 91` only powers it down
+after a BLE session is active.
 
 The Android APK's manual drive path stops with flag `18 14`. Direct opcode `14`
 depends on the toy's internal cam/selector position, so this app currently keeps

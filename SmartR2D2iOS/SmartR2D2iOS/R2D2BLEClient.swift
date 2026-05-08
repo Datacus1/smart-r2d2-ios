@@ -181,12 +181,24 @@ final class R2D2BLEClient: NSObject, ObservableObject {
         sendCommand(R2D2Protocol.playPlaylist(sound.rawValue))
     }
 
+    func playPlaylist(_ playlistID: UInt16) {
+        sendCommand(R2D2Protocol.playPlaylist(playlistID))
+    }
+
     func playExpression(_ expression: R2D2Protocol.Expression) {
         sendCommand(R2D2Protocol.expression(expression))
     }
 
+    func playSequence(_ sequenceID: UInt16) {
+        sendCommand(R2D2Protocol.highLevelSequence(sequenceID))
+    }
+
     func stopAudio() {
         sendCommand(R2D2Protocol.stopSequences(flags: R2D2Protocol.StopFlags.audioPlaylist))
+    }
+
+    func stopSequences(flags: UInt8) {
+        sendCommand(R2D2Protocol.stopSequences(flags: flags))
     }
 
     func powerDownToy() {

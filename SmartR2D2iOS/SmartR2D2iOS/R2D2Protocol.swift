@@ -38,13 +38,37 @@ enum R2D2Protocol {
         }
     }
 
-    enum DriveDirection: UInt16 {
+    enum DriveDirection: UInt16, CaseIterable, Identifiable {
         case forward = 1000
         case backward = 1001
-        case forwardLeft = 1002
-        case forwardRight = 1003
-        case backwardLeft = 1004
-        case backwardRight = 1005
+        case forwardRight = 1002
+        case forwardLeft = 1003
+        case backwardRight = 1004
+        case backwardLeft = 1005
+
+        var id: UInt16 { rawValue }
+
+        var title: String {
+            switch self {
+            case .forward: return "Forward"
+            case .backward: return "Backward"
+            case .forwardRight: return "Forward Right"
+            case .forwardLeft: return "Forward Left"
+            case .backwardRight: return "Backward Right"
+            case .backwardLeft: return "Backward Left"
+            }
+        }
+
+        var symbolName: String {
+            switch self {
+            case .forward: return "arrow.up"
+            case .backward: return "arrow.down"
+            case .forwardRight: return "arrow.up.right"
+            case .forwardLeft: return "arrow.up.left"
+            case .backwardRight: return "arrow.down.right"
+            case .backwardLeft: return "arrow.down.left"
+            }
+        }
     }
 
     enum SequenceType: UInt8 {
@@ -124,6 +148,106 @@ enum R2D2Protocol {
         }
     }
 
+    struct SequenceOption: Identifiable, Hashable {
+        let title: String
+        let sequenceID: UInt16
+        let symbolName: String
+
+        var id: UInt16 { sequenceID }
+    }
+
+    struct SequenceGroup: Identifiable, Hashable {
+        let title: String
+        let ids: [UInt16]
+        let symbolName: String
+
+        var id: String { title }
+    }
+
+    struct PlaylistOption: Identifiable, Hashable {
+        let title: String
+        let playlistID: UInt16
+        let symbolName: String
+
+        var id: UInt16 { playlistID }
+    }
+
+    struct StopOption: Identifiable, Hashable {
+        let title: String
+        let flags: UInt8
+        let symbolName: String
+
+        var id: UInt8 { flags }
+    }
+
+    static let headAnimationActions = [
+        SequenceOption(title: "Rotate Head Left", sequenceID: 106, symbolName: "arrow.counterclockwise"),
+        SequenceOption(title: "Rotate Head Right", sequenceID: 107, symbolName: "arrow.clockwise")
+    ]
+
+    static let shuffleActions = [
+        SequenceOption(title: "Shuffle Back", sequenceID: 111, symbolName: "backward.fill"),
+        SequenceOption(title: "Shuffle Forward", sequenceID: 141, symbolName: "forward.fill"),
+        SequenceOption(title: "Shuffle In Place", sequenceID: 170, symbolName: "arrow.triangle.2.circlepath")
+    ]
+
+    static let lightSequenceActions = [
+        SequenceOption(title: "Blue Flash", sequenceID: 3, symbolName: "bolt.fill"),
+        SequenceOption(title: "Blue to Red", sequenceID: 15, symbolName: "arrow.left.arrow.right"),
+        SequenceOption(title: "Red to Blue", sequenceID: 25, symbolName: "arrow.left.arrow.right"),
+        SequenceOption(title: "Red Flash", sequenceID: 96, symbolName: "bolt.fill")
+    ]
+
+    static let utilityActions = [
+        SequenceOption(title: "Alarm", sequenceID: 1, symbolName: "alarm.fill"),
+        SequenceOption(title: "Berserk", sequenceID: 2, symbolName: "flame.fill"),
+        SequenceOption(title: "Celebrate", sequenceID: 13, symbolName: "star.fill"),
+        SequenceOption(title: "Interface", sequenceID: 14, symbolName: "terminal.fill"),
+        SequenceOption(title: "Overload", sequenceID: 95, symbolName: "exclamationmark.triangle.fill"),
+        SequenceOption(title: "Runaway", sequenceID: 108, symbolName: "figure.run"),
+        SequenceOption(title: "Scanner", sequenceID: 109, symbolName: "viewfinder")
+    ]
+
+    static let expressionGroups = [
+        SequenceGroup(title: "Affection", ids: [260, 262, 263, 264, 265, 266, 267, 268, 269, 261], symbolName: "heart.fill"),
+        SequenceGroup(title: "Happy", ids: [274, 276, 277, 278, 279, 280, 369, 281, 282, 275], symbolName: "face.smiling"),
+        SequenceGroup(title: "Laughing", ids: [283, 285, 286, 287, 288, 289, 290, 291, 292, 284], symbolName: "quote.bubble.fill"),
+        SequenceGroup(title: "Sad", ids: [293, 295, 296, 297, 298, 299, 300, 301, 302, 294], symbolName: "cloud.rain.fill"),
+        SequenceGroup(title: "Surprise", ids: [303, 305, 306, 307, 473, 462, 463, 308, 309, 304], symbolName: "burst.fill"),
+        SequenceGroup(title: "Afraid", ids: [461, 271, 272, 273, 468, 469, 470, 464, 465, 270], symbolName: "exclamationmark.triangle.fill"),
+        SequenceGroup(title: "Talk", ids: [323, 310, 311, 312, 313, 314, 315, 316, 317, 413], symbolName: "bubble.left.and.bubble.right.fill")
+    ]
+
+    static let danceAndAmbientGroups = [
+        SequenceGroup(title: "Dance", ids: [453, 454, 455, 456, 457, 458, 459, 460], symbolName: "music.note"),
+        SequenceGroup(title: "Music Dance", ids: Array(UInt16(419)...UInt16(434)), symbolName: "music.quarternote.3"),
+        SequenceGroup(title: "Songs", ids: Array(UInt16(453)...UInt16(460)), symbolName: "speaker.wave.2.fill"),
+        SequenceGroup(title: "Bored", ids: Array(UInt16(360)...UInt16(367)), symbolName: "moon.zzz.fill"),
+        SequenceGroup(title: "Hanging Out", ids: Array(UInt16(395)...UInt16(404)), symbolName: "sparkles"),
+        SequenceGroup(title: "Look Around", ids: Array(UInt16(408)...UInt16(417)), symbolName: "eye.fill"),
+        SequenceGroup(title: "Obstacle", ids: Array(UInt16(435)...UInt16(444)), symbolName: "exclamationmark.octagon.fill"),
+        SequenceGroup(title: "Relieved", ids: Array(UInt16(445)...UInt16(452)), symbolName: "checkmark.circle.fill"),
+        SequenceGroup(title: "Startled", ids: Array(UInt16(461)...UInt16(473)), symbolName: "bolt.fill"),
+        SequenceGroup(title: "Wakeup", ids: Array(UInt16(475)...UInt16(477)), symbolName: "sun.max.fill")
+    ]
+
+    static let stopOptions = [
+        StopOption(title: "Stop All", flags: StopFlags.all, symbolName: "stop.circle.fill"),
+        StopOption(title: "Stop Audio", flags: StopFlags.audioPlaylist, symbolName: "speaker.slash.fill"),
+        StopOption(title: "Stop Movement", flags: StopFlags.motorSequence | StopFlags.motor2, symbolName: "pause.circle.fill"),
+        StopOption(title: "Stop Sequence", flags: StopFlags.highLevel, symbolName: "xmark.circle.fill"),
+        StopOption(title: "Stop LEDs", flags: StopFlags.ledSequence, symbolName: "lightbulb.slash.fill")
+    ]
+
+    static let soundOptions: [PlaylistOption] = (0...174).map { index in
+        let playlistID = UInt16(index)
+        return PlaylistOption(
+            title: soundTitle(for: playlistID),
+            playlistID: playlistID,
+            symbolName: soundSymbol(for: playlistID)
+        )
+    }
+
     static func head(_ position: HeadPosition) -> Data {
         Data([0x13, position.rawValue])
     }
@@ -149,12 +273,57 @@ enum R2D2Protocol {
         startSequence(type: .highLevel, index: expression.rawValue)
     }
 
+    static func highLevelSequence(_ index: UInt16) -> Data {
+        startSequence(type: .highLevel, index: index)
+    }
+
     static func startSequence(type: SequenceType, index: UInt16) -> Data {
         Data([0x17, type.rawValue, UInt8(index & 0x00FF), UInt8((index >> 8) & 0x00FF)])
     }
 
     static func stopSequences(flags: UInt8 = StopFlags.all) -> Data {
         Data([0x18, flags & StopFlags.all])
+    }
+
+    private static func soundTitle(for playlistID: UInt16) -> String {
+        switch playlistID {
+        case 0...137: return "Babble \(playlistID)"
+        case 138: return "Stationary Mode"
+        case 139: return "Mobile Mode"
+        case 140: return "Guard Mode"
+        case 141: return "Guard Countdown"
+        case 142: return "Is That You"
+        case 143: return "Intruder Alarm Loop"
+        case 144: return "Intruder Alarm Tail"
+        case 145: return "Alarm Deactivated"
+        case 146: return "Wake Up"
+        case 147, 167: return "Force Control \(playlistID)"
+        case 148...150: return "Humming \(playlistID)"
+        case 151: return "Going to Sleep"
+        case 152...156: return "Whistle \(playlistID)"
+        case 157: return "Achievement"
+        case 158...164: return "Droid Vocal \(playlistID)"
+        case 165...166: return "Cantina \(playlistID)"
+        case 168: return "Unlock Alarm"
+        case 169: return "Unlock Scan"
+        case 170: return "Unlock Interface"
+        case 171: return "Unlock Celebrate"
+        case 172: return "Unlock Overload"
+        case 173: return "Unlock Runaway"
+        case 174: return "Unlock Berserk"
+        default: return "Sound \(playlistID)"
+        }
+    }
+
+    private static func soundSymbol(for playlistID: UInt16) -> String {
+        switch playlistID {
+        case 143...145, 168: return "alarm.fill"
+        case 152...156: return "music.note"
+        case 165...166: return "music.quarternote.3"
+        case 169: return "viewfinder"
+        case 171: return "star.fill"
+        default: return "speaker.wave.2.fill"
+        }
     }
 }
 

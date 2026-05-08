@@ -6,6 +6,7 @@ struct ContentView: View {
     @StateObject private var ble = R2D2BLEClient()
     @State private var isConnectionPresented = false
     @State private var isDiagnosticsPresented = false
+    @State private var activeCommandPanel: CommandPanel?
 
     var body: some View {
         GeometryReader { proxy in
@@ -59,6 +60,9 @@ struct ContentView: View {
         .sheet(isPresented: $isDiagnosticsPresented) {
             DiagnosticsConsole(ble: ble)
         }
+        .sheet(item: $activeCommandPanel) { panel in
+            CommandPanelSheet(panel: panel, ble: ble)
+        }
     }
 
     private var landscapeConsole: some View {
@@ -87,15 +91,13 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             VStack(spacing: 14) {
-                ExpressionRail { expression in
-                    ble.playExpression(expression)
+                CommandDock(axis: .vertical) { panel in
+                    activeCommandPanel = panel
                 }
-                .disabled(!ble.isReady)
-                .opacity(ble.isReady ? 1 : 0.45)
 
                 Spacer()
             }
-            .frame(width: 126)
+            .frame(width: 136)
         }
     }
 
@@ -124,11 +126,9 @@ struct ContentView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            ExpressionRail { expression in
-                ble.playExpression(expression)
+            CommandDock(axis: .horizontal) { panel in
+                activeCommandPanel = panel
             }
-            .disabled(!ble.isReady)
-            .opacity(ble.isReady ? 1 : 0.45)
         }
     }
 
@@ -138,6 +138,13 @@ struct ContentView: View {
                 ble.setHead(.left)
             }
             .frame(width: width, height: height)
+
+            Spacer()
+
+            HeadButton(position: .center, isEnabled: ble.isReady) {
+                ble.setHead(.center)
+            }
+            .frame(width: min(width, 62), height: height)
 
             Spacer()
 
@@ -186,6 +193,45 @@ private enum Haptics {
 
     static func press() {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+    }
+}
+
+private enum CommandPanel: String, CaseIterable, Identifiable {
+    case head
+    case shuffle
+    case lights
+    case sounds
+    case expressions
+    case dances
+    case utility
+    case advanced
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .head: return "Head"
+        case .shuffle: return "Shuffle"
+        case .lights: return "Lights"
+        case .sounds: return "Sounds"
+        case .expressions: return "Moods"
+        case .dances: return "Dance"
+        case .utility: return "Utility"
+        case .advanced: return "Catalog"
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .head: return "arrow.triangle.2.circlepath"
+        case .shuffle: return "figure.walk.motion"
+        case .lights: return "lightbulb.fill"
+        case .sounds: return "speaker.wave.2.fill"
+        case .expressions: return "face.smiling"
+        case .dances: return "music.note"
+        case .utility: return "viewfinder"
+        case .advanced: return "number"
+        }
     }
 }
 
@@ -418,35 +464,96 @@ private struct DrivePad: View {
                 .stroke(Color.cyan.opacity(0.34), lineWidth: 1.4)
                 .padding(30)
 
-            PadSegment(direction: .up, isEnabled: isEnabled, start: { start(.forward) }, stop: stop)
-                .frame(width: 120, height: 76)
-                .offset(y: -67)
+            VStack(spacing: 8) {
+                DriveControlButton(direction: .forward, isEnabled: isEnabled, start: start, stop: stop)
+                    .frame(width: 70, height: 48)
 
-            PadSegment(direction: .down, isEnabled: isEnabled, start: { start(.backward) }, stop: stop)
-                .frame(width: 120, height: 76)
-                .offset(y: 67)
+                HStack(spacing: 12) {
+                    DriveControlButton(direction: .forwardLeft, isEnabled: isEnabled, start: start, stop: stop)
+                        .frame(width: 58, height: 54)
 
-            PadSegment(direction: .left, isEnabled: isEnabled, start: { start(.forwardLeft) }, stop: stop)
-                .frame(width: 76, height: 120)
-                .offset(x: -67)
-
-            PadSegment(direction: .right, isEnabled: isEnabled, start: { start(.forwardRight) }, stop: stop)
-                .frame(width: 76, height: 120)
-                .offset(x: 67)
-
-            Diamond()
-                .fill(Color(red: 0.04, green: 0.22, blue: 0.34).opacity(isEnabled ? 0.72 : 0.28))
-                .overlay {
                     Diamond()
-                        .stroke(Color.cyan.opacity(isEnabled ? 0.72 : 0.22), lineWidth: 2)
+                        .fill(Color(red: 0.04, green: 0.22, blue: 0.34).opacity(isEnabled ? 0.72 : 0.28))
+                        .overlay {
+                            Diamond()
+                                .stroke(Color.cyan.opacity(isEnabled ? 0.72 : 0.22), lineWidth: 2)
+                        }
+                        .overlay {
+                            Circle()
+                                .fill(Color.white.opacity(isEnabled ? 0.88 : 0.28))
+                                .frame(width: 10, height: 10)
+                        }
+                        .frame(width: 48, height: 48)
+
+                    DriveControlButton(direction: .forwardRight, isEnabled: isEnabled, start: start, stop: stop)
+                        .frame(width: 58, height: 54)
                 }
-                .overlay {
-                    Circle()
-                        .fill(Color.white.opacity(isEnabled ? 0.88 : 0.28))
-                        .frame(width: 10, height: 10)
+
+                HStack(spacing: 8) {
+                    DriveControlButton(direction: .backwardLeft, isEnabled: isEnabled, start: start, stop: stop)
+                        .frame(width: 56, height: 48)
+
+                    DriveControlButton(direction: .backward, isEnabled: isEnabled, start: start, stop: stop)
+                        .frame(width: 62, height: 48)
+
+                    DriveControlButton(direction: .backwardRight, isEnabled: isEnabled, start: start, stop: stop)
+                        .frame(width: 56, height: 48)
                 }
-            .frame(width: 54, height: 54)
+            }
         }
+    }
+}
+
+private struct DriveControlButton: View {
+    let direction: R2D2Protocol.DriveDirection
+    let isEnabled: Bool
+    let start: (R2D2Protocol.DriveDirection) -> Void
+    let stop: () -> Void
+
+    @State private var isPressed = false
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 14)
+            .fill(fill)
+            .overlay {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.cyan.opacity(isEnabled ? 0.72 : 0.18), lineWidth: 1.5)
+            }
+            .overlay {
+                Image(systemName: direction.symbolName)
+                    .font(.system(size: 23, weight: .black))
+                    .foregroundStyle(.white.opacity(isEnabled ? 0.96 : 0.35))
+                    .shadow(color: Color.cyan.opacity(0.9), radius: isEnabled ? 6 : 0)
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 14))
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in
+                        guard isEnabled, !isPressed else {
+                            return
+                        }
+                        isPressed = true
+                        Haptics.press()
+                        start(direction)
+                    }
+                    .onEnded { _ in
+                        guard isPressed else {
+                            return
+                        }
+                        isPressed = false
+                        stop()
+                    }
+            )
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel(direction.title)
+    }
+
+    private var fill: LinearGradient {
+        let colors = isPressed
+            ? [Color.cyan.opacity(0.75), Color(red: 0.04, green: 0.42, blue: 0.62).opacity(0.9)]
+            : [Color(red: 0.04, green: 0.25, blue: 0.4).opacity(isEnabled ? 0.9 : 0.35), Color(red: 0.02, green: 0.11, blue: 0.2).opacity(0.9)]
+
+        return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
     }
 }
 
@@ -602,10 +709,11 @@ private struct HeadButton: View {
                     .shadow(color: Color.cyan.opacity(isEnabled ? 0.42 : 0), radius: 8)
 
                 VStack(spacing: 3) {
-                    Image(systemName: position == .left ? "arrow.turn.up.left" : "arrow.turn.up.right")
+                    Image(systemName: position.symbolName)
                         .font(.system(size: 24, weight: .black))
-                    Image(systemName: "arcade.stick.console")
-                        .font(.system(size: 17, weight: .semibold))
+                    Text(position.title.uppercased())
+                        .font(.system(size: 8, weight: .black))
+                        .lineLimit(1)
                 }
                 .foregroundStyle(.white.opacity(isEnabled ? 0.94 : 0.35))
                 .shadow(color: Color.cyan.opacity(0.75), radius: isEnabled ? 5 : 0)
@@ -613,7 +721,7 @@ private struct HeadButton: View {
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
-        .accessibilityLabel(position == .left ? "Rotate head left" : "Rotate head right")
+        .accessibilityLabel("Move head \(position.title.lowercased())")
     }
 }
 
@@ -691,6 +799,58 @@ private struct BeveledPanel: Shape {
         path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + cut))
         path.closeSubpath()
         return path
+    }
+}
+
+private struct CommandDock: View {
+    let axis: Axis.Set
+    let action: (CommandPanel) -> Void
+
+    var body: some View {
+        ScrollView(axis, showsIndicators: false) {
+            if axis == .vertical {
+                VStack(spacing: 10) {
+                    buttons
+                }
+                .padding(.vertical, 4)
+            } else {
+                HStack(spacing: 10) {
+                    buttons
+                }
+                .padding(.horizontal, 4)
+            }
+        }
+    }
+
+    private var buttons: some View {
+        ForEach(CommandPanel.allCases) { panel in
+            Button {
+                Haptics.tap()
+                action(panel)
+            } label: {
+                BeveledPanel()
+                    .fill(Color(red: 0.04, green: 0.25, blue: 0.38).opacity(0.94))
+                    .overlay {
+                        BeveledPanel()
+                            .stroke(Color.cyan.opacity(0.74), lineWidth: 1.5)
+                    }
+                    .overlay {
+                        VStack(spacing: 4) {
+                            Image(systemName: panel.symbolName)
+                                .font(.system(size: 20, weight: .bold))
+                            Text(panel.title.uppercased())
+                                .font(.system(size: 8, weight: .black))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.72)
+                        }
+                        .foregroundStyle(.white)
+                        .shadow(color: Color.cyan.opacity(0.85), radius: 5)
+                    }
+            }
+            .buttonStyle(.plain)
+            .frame(width: axis == .vertical ? 104 : 86, height: 54)
+            .accessibilityLabel(panel.title)
+        }
     }
 }
 
@@ -877,6 +1037,188 @@ private struct StatusPill: View {
         case .scanning, .connecting, .discovering: return .yellow
         default: return .cyan.opacity(0.55)
         }
+    }
+}
+
+private struct CommandPanelSheet: View {
+    let panel: CommandPanel
+    @ObservedObject var ble: R2D2BLEClient
+    @Environment(\.dismiss) private var dismiss
+    @State private var soundSearch = ""
+    @State private var rawSequenceID = 0
+    @State private var rawPlaylistID = 0
+
+    var body: some View {
+        NavigationStack {
+            List {
+                content
+            }
+            .navigationTitle(panel.title)
+            .searchable(text: $soundSearch, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search sounds or IDs")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch panel {
+        case .head:
+            Section("Direct") {
+                ForEach(R2D2Protocol.HeadPosition.allCases) { position in
+                    commandRow(title: position.title, systemImage: position.symbolName, detail: R2D2Protocol.head(position).hexString) {
+                        ble.setHead(position)
+                    }
+                }
+            }
+
+            Section("Animations") {
+                ForEach(R2D2Protocol.headAnimationActions) { option in
+                    sequenceRow(option)
+                }
+            }
+
+        case .shuffle:
+            Section("Shuffle") {
+                ForEach(R2D2Protocol.shuffleActions) { option in
+                    sequenceRow(option)
+                }
+            }
+
+        case .lights:
+            Section("Direct") {
+                ForEach([R2D2Protocol.LEDColor.blue, .red, .off]) { color in
+                    commandRow(title: "\(color.rawValue) Light", systemImage: color == .off ? "lightbulb.slash.fill" : "lightbulb.fill", detail: R2D2Protocol.led(color).hexString) {
+                        ble.setLED(color)
+                    }
+                }
+            }
+
+            Section("Animations") {
+                ForEach(R2D2Protocol.lightSequenceActions) { option in
+                    sequenceRow(option)
+                }
+            }
+
+        case .sounds:
+            Section("Sounds") {
+                ForEach(filteredSounds) { sound in
+                    commandRow(title: sound.title, systemImage: sound.symbolName, detail: "ID \(sound.playlistID)") {
+                        ble.playPlaylist(sound.playlistID)
+                    }
+                }
+            }
+
+        case .expressions:
+            Section("Mood Pools") {
+                ForEach(R2D2Protocol.expressionGroups) { group in
+                    groupRow(group)
+                }
+            }
+
+        case .dances:
+            Section("Dances and Ambient") {
+                ForEach(R2D2Protocol.danceAndAmbientGroups) { group in
+                    groupRow(group)
+                }
+            }
+
+        case .utility:
+            Section("Actions") {
+                ForEach(R2D2Protocol.utilityActions) { option in
+                    sequenceRow(option)
+                }
+            }
+
+            Section("Stop") {
+                ForEach(R2D2Protocol.stopOptions) { option in
+                    stopRow(option)
+                }
+            }
+
+        case .advanced:
+            Section("High-Level Sequence") {
+                Stepper("Sequence ID \(rawSequenceID)", value: $rawSequenceID, in: 0...477)
+                commandRow(title: "Play Sequence", systemImage: "play.fill", detail: R2D2Protocol.highLevelSequence(UInt16(rawSequenceID)).hexString) {
+                    ble.playSequence(UInt16(rawSequenceID))
+                }
+            }
+
+            Section("Playlist Sound") {
+                Stepper("Playlist ID \(rawPlaylistID)", value: $rawPlaylistID, in: 0...174)
+                commandRow(title: "Play Sound", systemImage: "speaker.wave.2.fill", detail: R2D2Protocol.playPlaylist(UInt16(rawPlaylistID)).hexString) {
+                    ble.playPlaylist(UInt16(rawPlaylistID))
+                }
+            }
+
+            Section("Stop") {
+                ForEach(R2D2Protocol.stopOptions) { option in
+                    stopRow(option)
+                }
+            }
+        }
+    }
+
+    private var filteredSounds: [R2D2Protocol.PlaylistOption] {
+        let query = soundSearch.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else {
+            return R2D2Protocol.soundOptions
+        }
+
+        return R2D2Protocol.soundOptions.filter { option in
+            option.title.localizedCaseInsensitiveContains(query) || "\(option.playlistID)".contains(query)
+        }
+    }
+
+    private func sequenceRow(_ option: R2D2Protocol.SequenceOption) -> some View {
+        commandRow(title: option.title, systemImage: option.symbolName, detail: "ID \(option.sequenceID)") {
+            ble.playSequence(option.sequenceID)
+        }
+    }
+
+    private func groupRow(_ group: R2D2Protocol.SequenceGroup) -> some View {
+        commandRow(title: group.title, systemImage: group.symbolName, detail: "\(group.ids.count) variants") {
+            guard let sequenceID = group.ids.randomElement() else {
+                return
+            }
+            ble.playSequence(sequenceID)
+        }
+    }
+
+    private func stopRow(_ option: R2D2Protocol.StopOption) -> some View {
+        commandRow(title: option.title, systemImage: option.symbolName, detail: R2D2Protocol.stopSequences(flags: option.flags).hexString) {
+            ble.stopSequences(flags: option.flags)
+        }
+    }
+
+    private func commandRow(title: String, systemImage: String, detail: String, action: @escaping () -> Void) -> some View {
+        Button {
+            Haptics.tap()
+            action()
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 19, weight: .semibold))
+                    .frame(width: 28)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.headline)
+                    Text(detail)
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+            }
+        }
+        .disabled(!ble.isReady)
+        .accessibilityLabel(title)
     }
 }
 

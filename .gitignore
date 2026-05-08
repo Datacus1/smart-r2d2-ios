@@ -1,0 +1,18 @@
+# Local reverse-engineering/reference files
+*.apk
+
+# Xcode and Swift
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

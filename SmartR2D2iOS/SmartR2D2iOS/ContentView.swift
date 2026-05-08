@@ -200,7 +200,8 @@ private struct PortraitMainControlPanel: View {
                     start: startDrive,
                     stop: stopDrive
                 )
-                .frame(maxWidth: .infinity, height: 146)
+                .frame(maxWidth: .infinity)
+                .frame(height: 146)
             }
             .frame(height: 176)
 

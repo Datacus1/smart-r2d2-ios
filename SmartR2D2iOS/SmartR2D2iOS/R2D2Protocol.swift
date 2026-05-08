@@ -105,6 +105,15 @@ enum R2D2Protocol {
 
         var id: UInt16 { rawValue }
 
+        var title: String {
+            switch self {
+            case .happy: return "Mood"
+            case .sad: return "Sounds"
+            case .surprise: return "FX"
+            case .music: return "Music"
+            }
+        }
+
         var symbolName: String {
             switch self {
             case .happy: return "face.smiling"

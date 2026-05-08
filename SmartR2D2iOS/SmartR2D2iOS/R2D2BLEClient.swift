@@ -54,6 +54,7 @@ final class R2D2BLEClient: NSObject, ObservableObject {
     @Published private(set) var discoveredToys: [DiscoveredToy] = []
     @Published private(set) var logEntries: [BLELogEntry] = []
     @Published private(set) var lastRSSI: Int?
+    @Published private(set) var lastWriteHex: String = ""
     @Published private(set) var lastNotificationHex: String = ""
     @Published var autoConnect = true
 
@@ -135,7 +136,11 @@ final class R2D2BLEClient: NSObject, ObservableObject {
 
     func disconnect() {
         wantsConnectionWhenFound = false
-        stopDriveTimer()
+        if isReady {
+            stopDrive()
+        } else {
+            stopDriveTimer()
+        }
         stopKeepAlive()
         sendRaw(R2D2Protocol.endAppMode)
 
@@ -213,6 +218,7 @@ final class R2D2BLEClient: NSObject, ObservableObject {
         }
 
         peripheral.writeValue(data, for: characteristic, type: .withoutResponse)
+        lastWriteHex = data.hexString
         log("TX \(data.hexString)")
     }
 
@@ -271,15 +277,19 @@ extension R2D2BLEClient: CBCentralManagerDelegate {
             state = .idle
             log("Bluetooth powered on")
         case .poweredOff:
+            stopDriveTimer()
             state = .poweredOff
             log("Bluetooth powered off")
         case .unsupported:
+            stopDriveTimer()
             state = .unsupported
             log("Bluetooth unsupported")
         case .unauthorized:
+            stopDriveTimer()
             state = .failed("Bluetooth Unauthorized")
             log("Bluetooth permission denied")
         case .resetting:
+            stopDriveTimer()
             state = .unknown
             log("Bluetooth resetting")
         case .unknown:

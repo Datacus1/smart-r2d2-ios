@@ -1,6 +1,8 @@
 import SwiftUI
+import UIKit
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var ble = R2D2BLEClient()
     @State private var isConnectionPresented = false
     @State private var isDiagnosticsPresented = false
@@ -11,20 +13,46 @@ struct ContentView: View {
 
             ZStack {
                 BlueprintBackground()
+                    .ignoresSafeArea()
 
                 if isLandscape {
                     landscapeConsole
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 10)
                 } else {
                     portraitConsole
                         .padding(.horizontal, 18)
-                        .padding(.vertical, 14)
+                        .padding(.bottom, 18)
                 }
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
-        .ignoresSafeArea()
+        .safeAreaInset(edge: .top) {
+            TopControlBar(
+                state: ble.state,
+                rssi: ble.lastRSSI,
+                isReady: ble.isReady,
+                toolsAction: { isDiagnosticsPresented = true },
+                connectionAction: { isConnectionPresented = true },
+                settingsAction: { isDiagnosticsPresented = true }
+            )
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+            .padding(.bottom, 8)
+        }
+        .onChange(of: scenePhase) { newPhase in
+            guard newPhase != .active else {
+                return
+            }
+            if ble.isReady {
+                ble.stopDrive()
+            }
+        }
+        .onDisappear {
+            if ble.isReady {
+                ble.stopDrive()
+            }
+        }
         .sheet(isPresented: $isConnectionPresented) {
             ConnectionConsole(ble: ble)
         }
@@ -38,29 +66,9 @@ struct ContentView: View {
             ZStack {
                 R2D2BodyView(isReady: ble.isReady)
 
-                VStack {
-                    HStack {
-                        HUDIconButton(systemImage: "chevron.left", isEnabled: true) {
-                            isConnectionPresented = true
-                        }
-
-                        Spacer()
-
-                        HeadButton(position: .left, isEnabled: ble.isReady) {
-                            ble.setHead(.left)
-                        }
-                        .frame(width: 72, height: 62)
-                        .offset(x: -6, y: 26)
-
-                        HeadButton(position: .right, isEnabled: ble.isReady) {
-                            ble.setHead(.right)
-                        }
-                        .frame(width: 72, height: 62)
-                        .offset(x: 8, y: 26)
-                    }
-
-                    Spacer()
-                }
+                headControlRow(width: 74, height: 64)
+                    .padding(.horizontal, 54)
+                    .offset(y: -108)
 
                 DrivePad(
                     isEnabled: ble.isReady,
@@ -69,16 +77,16 @@ struct ContentView: View {
                 )
                 .frame(width: 222, height: 222)
                 .offset(x: 8, y: 72)
+
+                EmergencyStopButton(isEnabled: ble.isReady) {
+                    ble.stopDrive()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .padding(.bottom, 8)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             VStack(spacing: 14) {
-                StatusPill(state: ble.state, rssi: ble.lastRSSI, isReady: ble.isReady) {
-                    isConnectionPresented = true
-                }
-
-                Spacer()
-
                 ExpressionRail { expression in
                     ble.playExpression(expression)
                 }
@@ -86,10 +94,6 @@ struct ContentView: View {
                 .opacity(ble.isReady ? 1 : 0.45)
 
                 Spacer()
-
-                HUDIconButton(systemImage: "questionmark", isEnabled: true) {
-                    isDiagnosticsPresented = true
-                }
             }
             .frame(width: 126)
         }
@@ -97,40 +101,10 @@ struct ContentView: View {
 
     private var portraitConsole: some View {
         VStack(spacing: 16) {
-            HStack {
-                HUDIconButton(systemImage: "chevron.left", isEnabled: true) {
-                    isConnectionPresented = true
-                }
-
-                Spacer()
-
-                StatusPill(state: ble.state, rssi: ble.lastRSSI, isReady: ble.isReady) {
-                    isConnectionPresented = true
-                }
-
-                Spacer()
-
-                HUDIconButton(systemImage: "questionmark", isEnabled: true) {
-                    isDiagnosticsPresented = true
-                }
-            }
-
             ZStack {
                 R2D2BodyView(isReady: ble.isReady)
 
-                HStack {
-                    HeadButton(position: .left, isEnabled: ble.isReady) {
-                        ble.setHead(.left)
-                    }
-                    .frame(width: 76, height: 62)
-
-                    Spacer()
-
-                    HeadButton(position: .right, isEnabled: ble.isReady) {
-                        ble.setHead(.right)
-                    }
-                    .frame(width: 76, height: 62)
-                }
+                headControlRow(width: 76, height: 62)
                 .padding(.horizontal, 38)
                 .offset(y: -116)
 
@@ -141,6 +115,12 @@ struct ContentView: View {
                 )
                 .frame(width: 236, height: 236)
                 .offset(y: 96)
+
+                EmergencyStopButton(isEnabled: ble.isReady) {
+                    ble.stopDrive()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .padding(.bottom, 12)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
@@ -149,6 +129,22 @@ struct ContentView: View {
             }
             .disabled(!ble.isReady)
             .opacity(ble.isReady ? 1 : 0.45)
+        }
+    }
+
+    private func headControlRow(width: CGFloat, height: CGFloat) -> some View {
+        HStack {
+            HeadButton(position: .left, isEnabled: ble.isReady) {
+                ble.setHead(.left)
+            }
+            .frame(width: width, height: height)
+
+            Spacer()
+
+            HeadButton(position: .right, isEnabled: ble.isReady) {
+                ble.setHead(.right)
+            }
+            .frame(width: width, height: height)
         }
     }
 }
@@ -180,6 +176,16 @@ private struct BlueprintBackground: View {
             )
             .blendMode(.screen)
         }
+    }
+}
+
+private enum Haptics {
+    static func tap() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    static func press() {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     }
 }
 
@@ -390,8 +396,17 @@ private struct DrivePad: View {
 
     var body: some View {
         ZStack {
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color.black.opacity(0.26))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(Color.cyan.opacity(isEnabled ? 0.28 : 0.12), lineWidth: 1)
+                }
+                .frame(width: 204, height: 204)
+                .shadow(color: Color.cyan.opacity(isEnabled ? 0.28 : 0), radius: 10)
+
             RoundedRectangle(cornerRadius: 6)
-                .fill(Color(red: 0.03, green: 0.16, blue: 0.28).opacity(0.72))
+                .fill(Color(red: 0.03, green: 0.16, blue: 0.28).opacity(0.78))
                 .overlay {
                     RoundedRectangle(cornerRadius: 6)
                         .stroke(Color.cyan.opacity(0.58), lineWidth: 2)
@@ -400,8 +415,8 @@ private struct DrivePad: View {
                 .frame(width: 148, height: 148)
 
             XLines()
-                .stroke(Color.cyan.opacity(0.7), lineWidth: 2)
-                .padding(18)
+                .stroke(Color.cyan.opacity(0.34), lineWidth: 1.4)
+                .padding(30)
 
             PadSegment(direction: .up, isEnabled: isEnabled, start: { start(.forward) }, stop: stop)
                 .frame(width: 120, height: 76)
@@ -419,7 +434,10 @@ private struct DrivePad: View {
                 .frame(width: 76, height: 120)
                 .offset(x: 67)
 
-            Button(action: stop) {
+            Button {
+                Haptics.tap()
+                stop()
+            } label: {
                 Diamond()
                     .fill(Color(red: 0.04, green: 0.22, blue: 0.34).opacity(isEnabled ? 0.82 : 0.36))
                     .overlay {
@@ -435,6 +453,7 @@ private struct DrivePad: View {
             .buttonStyle(.plain)
             .disabled(!isEnabled)
             .frame(width: 54, height: 54)
+            .accessibilityLabel("Stop movement")
         }
     }
 }
@@ -485,6 +504,7 @@ private struct PadSegment: View {
                         return
                     }
                     isPressed = true
+                    Haptics.press()
                     start()
                 }
                 .onEnded { _ in
@@ -496,6 +516,7 @@ private struct PadSegment: View {
                 }
         )
         .accessibilityAddTraits(.isButton)
+        .accessibilityLabel(accessibilityTitle)
     }
 
     private var segmentFill: LinearGradient {
@@ -504,6 +525,15 @@ private struct PadSegment: View {
             : [Color(red: 0.04, green: 0.25, blue: 0.4).opacity(isEnabled ? 0.9 : 0.35), Color(red: 0.02, green: 0.11, blue: 0.2).opacity(0.9)]
 
         return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
+    }
+
+    private var accessibilityTitle: String {
+        switch direction {
+        case .up: return "Move forward"
+        case .down: return "Move backward"
+        case .left: return "Turn left"
+        case .right: return "Turn right"
+        }
     }
 }
 
@@ -566,18 +596,22 @@ private struct HeadButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            Haptics.tap()
+            action()
+        } label: {
             ZStack {
                 BeveledPanel()
-                    .fill(Color(red: 0.04, green: 0.27, blue: 0.42).opacity(isEnabled ? 0.92 : 0.38))
+                    .fill(Color(red: 0.04, green: 0.31, blue: 0.5).opacity(isEnabled ? 0.96 : 0.42))
                     .overlay {
                         BeveledPanel()
-                            .stroke(Color.cyan.opacity(isEnabled ? 0.78 : 0.22), lineWidth: 2)
+                            .stroke(Color.cyan.opacity(isEnabled ? 0.92 : 0.26), lineWidth: 2)
                     }
+                    .shadow(color: Color.cyan.opacity(isEnabled ? 0.42 : 0), radius: 8)
 
                 VStack(spacing: 3) {
                     Image(systemName: position == .left ? "arrow.turn.up.left" : "arrow.turn.up.right")
-                        .font(.system(size: 22, weight: .black))
+                        .font(.system(size: 24, weight: .black))
                     Image(systemName: "arcade.stick.console")
                         .font(.system(size: 17, weight: .semibold))
                 }
@@ -587,6 +621,7 @@ private struct HeadButton: View {
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
+        .accessibilityLabel(position == .left ? "Rotate head left" : "Rotate head right")
     }
 }
 
@@ -601,28 +636,35 @@ private struct ExpressionRail: View {
             VStack(spacing: 12) {
                 ForEach(R2D2Protocol.Expression.allCases) { expression in
                     Button {
+                        Haptics.tap()
                         action(expression)
                     } label: {
                         BeveledPanel()
-                            .fill(Color(red: 0.04, green: 0.24, blue: 0.36).opacity(0.9))
+                            .fill(Color(red: 0.04, green: 0.25, blue: 0.38).opacity(0.94))
                             .overlay {
                                 BeveledPanel()
-                                    .stroke(Color.cyan.opacity(0.62), lineWidth: 1.5)
+                                    .stroke(Color.cyan.opacity(0.74), lineWidth: 1.5)
                             }
                             .overlay {
-                                Image(systemName: expression.symbolName)
-                                    .font(.system(size: 25, weight: .bold))
-                                    .foregroundStyle(.white)
-                                    .shadow(color: Color.cyan.opacity(0.8), radius: 5)
+                                HStack(spacing: 7) {
+                                    Image(systemName: expression.symbolName)
+                                        .font(.system(size: 21, weight: .bold))
+                                    Text(expression.title.uppercased())
+                                        .font(.system(size: 9, weight: .black))
+                                        .lineLimit(1)
+                                }
+                                .foregroundStyle(.white)
+                                .shadow(color: Color.cyan.opacity(0.85), radius: 5)
                             }
                     }
                     .buttonStyle(.plain)
-                    .frame(width: 74, height: 54)
+                    .frame(width: 92, height: 54)
+                    .accessibilityLabel(expression.title)
                 }
             }
             .padding(.vertical, 18)
         }
-        .frame(width: 108, height: 272)
+        .frame(width: 122, height: 272)
     }
 }
 
@@ -660,29 +702,99 @@ private struct BeveledPanel: Shape {
     }
 }
 
-private struct HUDIconButton: View {
-    let systemImage: String
+private struct TopControlBar: View {
+    let state: R2D2BLEClient.ConnectionState
+    let rssi: Int?
+    let isReady: Bool
+    let toolsAction: () -> Void
+    let connectionAction: () -> Void
+    let settingsAction: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            HUDIconButton(
+                systemImage: "wrench.and.screwdriver",
+                accessibilityLabel: "Open BLE diagnostics",
+                isEnabled: true,
+                action: toolsAction
+            )
+
+            Spacer(minLength: 8)
+
+            StatusPill(state: state, rssi: rssi, isReady: isReady, action: connectionAction)
+
+            Spacer(minLength: 8)
+
+            HUDIconButton(
+                systemImage: "gearshape.fill",
+                accessibilityLabel: "Open settings",
+                isEnabled: true,
+                action: settingsAction
+            )
+        }
+        .frame(height: 56)
+    }
+}
+
+private struct EmergencyStopButton: View {
     let isEnabled: Bool
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            Haptics.press()
+            action()
+        } label: {
+            HStack(spacing: 7) {
+                Image(systemName: "stop.fill")
+                    .font(.system(size: 13, weight: .black))
+                Text("STOP")
+                    .font(.system(size: 13, weight: .black))
+            }
+            .foregroundStyle(.white.opacity(isEnabled ? 1 : 0.38))
+            .frame(width: 106, height: 44)
+            .background(Color(red: 0.28, green: 0.02, blue: 0.04).opacity(isEnabled ? 0.9 : 0.42), in: RoundedRectangle(cornerRadius: 14))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.red.opacity(isEnabled ? 0.72 : 0.22), lineWidth: 1.5)
+            }
+            .shadow(color: Color.red.opacity(isEnabled ? 0.36 : 0), radius: 8)
+        }
+        .buttonStyle(.plain)
+        .disabled(!isEnabled)
+        .accessibilityLabel("Emergency stop")
+    }
+}
+
+private struct HUDIconButton: View {
+    let systemImage: String
+    var accessibilityLabel: String? = nil
+    let isEnabled: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button {
+            Haptics.tap()
+            action()
+        } label: {
             ZStack {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(Color(red: 0.02, green: 0.12, blue: 0.22).opacity(0.7))
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(red: 0.02, green: 0.12, blue: 0.22).opacity(0.82))
                     .overlay {
-                        RoundedRectangle(cornerRadius: 6)
-                            .stroke(Color.cyan.opacity(0.6), lineWidth: 1.5)
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.cyan.opacity(isEnabled ? 0.68 : 0.24), lineWidth: 1.5)
                     }
+                    .shadow(color: Color.cyan.opacity(isEnabled ? 0.22 : 0), radius: 8)
 
                 Image(systemName: systemImage)
-                    .font(.system(size: 19, weight: .bold))
+                    .font(.system(size: 22, weight: .semibold))
                     .foregroundStyle(.white.opacity(isEnabled ? 0.96 : 0.38))
             }
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
-        .frame(width: 48, height: 40)
+        .frame(width: 52, height: 52)
+        .accessibilityLabel(accessibilityLabel ?? systemImage)
     }
 }
 
@@ -693,16 +805,20 @@ private struct StatusPill: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            Haptics.tap()
+            action()
+        } label: {
             HStack(spacing: 8) {
                 Circle()
-                    .fill(isReady ? Color.green : Color.cyan.opacity(0.35))
+                    .fill(statusColor)
                     .frame(width: 9, height: 9)
+                    .shadow(color: statusColor.opacity(0.75), radius: 5)
 
-                Text(shortTitle)
-                    .font(.caption.weight(.semibold))
+                Text(title)
+                    .font(.system(size: 14, weight: .black))
                     .lineLimit(1)
-                    .minimumScaleFactor(0.72)
+                    .minimumScaleFactor(0.62)
 
                 if let rssi, isReady {
                     Text("\(rssi)")
@@ -711,29 +827,38 @@ private struct StatusPill: View {
                 }
             }
             .foregroundStyle(.white)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .frame(maxWidth: 126)
-            .background(Color(red: 0.02, green: 0.12, blue: 0.22).opacity(0.72), in: RoundedRectangle(cornerRadius: 6))
+            .padding(.horizontal, 14)
+            .frame(minWidth: 170, maxWidth: 230, minHeight: 52, maxHeight: 52)
+            .background(Color(red: 0.02, green: 0.12, blue: 0.22).opacity(0.84), in: RoundedRectangle(cornerRadius: 16))
             .overlay {
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(Color.cyan.opacity(0.55), lineWidth: 1.5)
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.cyan.opacity(0.62), lineWidth: 1.5)
             }
+            .shadow(color: Color.cyan.opacity(isReady ? 0.32 : 0.16), radius: 9)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(title)
     }
 
-    private var shortTitle: String {
-        if isReady {
-            return "R2-D2"
-        }
-
+    private var title: String {
         switch state {
-        case .scanning: return "SCAN"
-        case .connecting, .discovering: return "LINK"
-        case .poweredOff: return "BT OFF"
-        case .failed: return "ERROR"
+        case .ready(let name): return "CONNECTED: \(name)"
+        case .scanning: return "SCANNING..."
+        case .connecting(let name): return "CONNECTING: \(name)"
+        case .discovering(let name): return "DISCOVERING: \(name)"
+        case .poweredOff: return "BLUETOOTH OFF"
+        case .failed: return "FAILED"
+        case .disconnected: return "DISCONNECTED"
         default: return "CONNECT"
+        }
+    }
+
+    private var statusColor: Color {
+        switch state {
+        case .ready: return .green
+        case .failed, .poweredOff: return .red
+        case .scanning, .connecting, .discovering: return .yellow
+        default: return .cyan.opacity(0.55)
         }
     }
 }
@@ -836,6 +961,18 @@ private struct DiagnosticsConsole: View {
                     }
                 }
 
+                Section("BLE") {
+                    diagnosticRow("Device", value: deviceName)
+                    diagnosticRow("Service", value: R2D2Protocol.serviceUUID.uuidString)
+                    diagnosticRow("Write characteristic", value: R2D2Protocol.writeCharacteristicUUID.uuidString)
+                    diagnosticRow("Notify 1", value: R2D2Protocol.notifyCharacteristicUUID.uuidString)
+                    diagnosticRow("Notify 2", value: R2D2Protocol.radioNotifyCharacteristicUUID.uuidString)
+                    diagnosticRow("Last write", value: ble.lastWriteHex.isEmpty ? "None" : ble.lastWriteHex)
+                    diagnosticRow("Last notify", value: ble.lastNotificationHex.isEmpty ? "None" : ble.lastNotificationHex)
+                    diagnosticRow("Connection state", value: ble.state.title)
+                    diagnosticRow("RSSI", value: ble.lastRSSI.map { "\($0) dBm" } ?? "None")
+                }
+
                 Section("Log") {
                     if ble.logEntries.isEmpty {
                         Text("No events")
@@ -863,6 +1000,24 @@ private struct DiagnosticsConsole: View {
                     }
                 }
             }
+        }
+    }
+
+    private var deviceName: String {
+        if case .ready(let name) = ble.state {
+            return name
+        }
+        return "2ndHeroD"
+    }
+
+    private func diagnosticRow(_ title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.caption.monospaced())
+                .textSelection(.enabled)
         }
     }
 }

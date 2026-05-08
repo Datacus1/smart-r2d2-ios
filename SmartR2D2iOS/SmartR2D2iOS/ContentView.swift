@@ -1735,36 +1735,18 @@ private struct DiagnosticsConsole: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Toy") {
+                Section("Power") {
                     Button {
-                        ble.setLED(.blue)
+                        ble.connectBestMatch()
                     } label: {
-                        Label("Blue Light", systemImage: "lightbulb.fill")
+                        Label("Turn On / Connect", systemImage: "power.circle.fill")
                     }
-
-                    Button {
-                        ble.setLED(.red)
-                    } label: {
-                        Label("Red Light", systemImage: "lightbulb")
-                    }
-
-                    Button {
-                        ble.setLED(.off)
-                    } label: {
-                        Label("Lights Off", systemImage: "lightbulb.slash")
-                    }
+                    .disabled(ble.isReady || ble.isScanning)
 
                     Button(role: .destructive) {
-                        ble.stopDrive()
-                        ble.stopAudio()
+                        ble.powerDownAndDisconnect()
                     } label: {
-                        Label("Stop", systemImage: "stop.fill")
-                    }
-
-                    Button(role: .destructive) {
-                        ble.powerDownToy()
-                    } label: {
-                        Label("Sleep", systemImage: "power")
+                        Label("Turn Off / Disconnect", systemImage: "power.circle")
                     }
                 }
 

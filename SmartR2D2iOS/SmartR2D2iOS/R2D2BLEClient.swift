@@ -153,6 +153,32 @@ final class R2D2BLEClient: NSObject, ObservableObject {
         }
     }
 
+    func powerDownAndDisconnect() {
+        wantsConnectionWhenFound = false
+        central.stopScan()
+
+        if isReady {
+            stopDrive()
+            lastCommandSummary = "Power down"
+            sendRaw(R2D2Protocol.keepAlive)
+            sendRaw(R2D2Protocol.powerDown)
+        } else {
+            stopDriveTimer()
+        }
+
+        stopKeepAlive()
+
+        if let targetPeripheral {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+                self?.central.cancelPeripheralConnection(targetPeripheral)
+            }
+        } else {
+            state = .disconnected
+            resetCharacteristics()
+            log("Disconnected")
+        }
+    }
+
     func setHead(_ position: R2D2Protocol.HeadPosition) {
         lastCommandSummary = "Head \(position.title)"
         sendCommand(R2D2Protocol.head(position))
@@ -212,12 +238,6 @@ final class R2D2BLEClient: NSObject, ObservableObject {
     func stopSequences(flags: UInt8) {
         lastCommandSummary = "Stop \(String(format: "%02X", flags))"
         sendCommand(R2D2Protocol.stopSequences(flags: flags))
-    }
-
-    func powerDownToy() {
-        lastCommandSummary = "Power down"
-        sendRaw(R2D2Protocol.keepAlive)
-        sendRaw(R2D2Protocol.powerDown)
     }
 
     func clearLog() {

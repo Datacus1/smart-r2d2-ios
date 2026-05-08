@@ -8,8 +8,9 @@ Native SwiftUI/CoreBluetooth starter app for controlling a Hasbro Smart R2-D2 to
 - Connects to the control characteristics found in the Android APK and confirmed with nRF Connect.
 - Subscribes to main and radio notifications.
 - Sends the recovered keepalive packet every 2 seconds.
-- Includes an old-app-style drive console with head controls, four-way drive,
-  expression buttons, diagnostics, LED control, stop audio, stop drive, and toy sleep.
+- Includes an old-app-style drive console with head controls, six-way drive,
+  main-screen LED control, action catalogs, diagnostics, and explicit
+  connect/power-down controls.
 
 ## Opening In Xcode
 

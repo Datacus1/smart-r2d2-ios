@@ -152,7 +152,7 @@ struct ContentView: View {
     }
 }
 
-private enum RemoteControlLayout {
+private enum RemoteControlLayout: Equatable {
     case landscape
     case portrait
 }

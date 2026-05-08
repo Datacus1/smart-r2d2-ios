@@ -56,6 +56,8 @@ final class R2D2BLEClient: NSObject, ObservableObject {
     @Published private(set) var lastRSSI: Int?
     @Published private(set) var lastWriteHex: String = ""
     @Published private(set) var lastNotificationHex: String = ""
+    @Published private(set) var lastCommandSummary: String = "Idle"
+    @Published private(set) var activeDriveSummary: String?
     @Published var autoConnect = true
 
     private var central: CBCentralManager!
@@ -152,15 +154,19 @@ final class R2D2BLEClient: NSObject, ObservableObject {
     }
 
     func setHead(_ position: R2D2Protocol.HeadPosition) {
+        lastCommandSummary = "Head \(position.title)"
         sendCommand(R2D2Protocol.head(position))
     }
 
     func setLED(_ color: R2D2Protocol.LEDColor) {
+        lastCommandSummary = "\(color.rawValue) light"
         sendCommand(R2D2Protocol.led(color))
     }
 
     func startDrive(_ direction: R2D2Protocol.DriveDirection) {
         activeDriveDirection = direction
+        activeDriveSummary = direction.title
+        lastCommandSummary = "Drive \(direction.title)"
         sendCommand(R2D2Protocol.drive(direction))
 
         driveTimer?.invalidate()
@@ -173,35 +179,43 @@ final class R2D2BLEClient: NSObject, ObservableObject {
     }
 
     func stopDrive() {
+        lastCommandSummary = "Motors stopped"
         stopDriveTimer()
         sendCommand(R2D2Protocol.stopDrive)
     }
 
     func playSound(_ sound: R2D2Protocol.Sound) {
+        lastCommandSummary = "Sound \(sound.title)"
         sendCommand(R2D2Protocol.playPlaylist(sound.rawValue))
     }
 
     func playPlaylist(_ playlistID: UInt16) {
+        lastCommandSummary = "Sound \(playlistID)"
         sendCommand(R2D2Protocol.playPlaylist(playlistID))
     }
 
     func playExpression(_ expression: R2D2Protocol.Expression) {
+        lastCommandSummary = expression.title
         sendCommand(R2D2Protocol.expression(expression))
     }
 
     func playSequence(_ sequenceID: UInt16) {
+        lastCommandSummary = "Sequence \(sequenceID)"
         sendCommand(R2D2Protocol.highLevelSequence(sequenceID))
     }
 
     func stopAudio() {
+        lastCommandSummary = "Audio stopped"
         sendCommand(R2D2Protocol.stopSequences(flags: R2D2Protocol.StopFlags.audioPlaylist))
     }
 
     func stopSequences(flags: UInt8) {
+        lastCommandSummary = "Stop \(String(format: "%02X", flags))"
         sendCommand(R2D2Protocol.stopSequences(flags: flags))
     }
 
     func powerDownToy() {
+        lastCommandSummary = "Power down"
         sendRaw(R2D2Protocol.keepAlive)
         sendRaw(R2D2Protocol.powerDown)
     }
@@ -254,6 +268,7 @@ final class R2D2BLEClient: NSObject, ObservableObject {
 
     private func stopDriveTimer() {
         activeDriveDirection = nil
+        activeDriveSummary = nil
         driveTimer?.invalidate()
         driveTimer = nil
     }

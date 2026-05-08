@@ -9,8 +9,8 @@
       color-scheme: dark;
       --cyan: #55dcff;
       --amber: #ffbd58;
-      --panel: rgba(0, 8, 15, 0.82);
-      --panel-strong: rgba(0, 6, 12, 0.92);
+      --panel: rgba(0, 8, 15, 0.46);
+      --panel-strong: rgba(0, 6, 12, 0.64);
       --stroke: rgba(235, 248, 255, 0.32);
       --text: rgba(255, 255, 255, 0.96);
     }
@@ -143,7 +143,7 @@
 
     .section {
       border-radius: 18px;
-      background: rgba(0, 7, 13, 0.84);
+      background: linear-gradient(145deg, rgba(0, 7, 13, 0.32), rgba(3, 36, 48, 0.12));
       padding: 7px;
     }
 
@@ -169,7 +169,7 @@
       display: grid;
       place-items: center;
       color: rgba(255, 255, 255, 0.94);
-      background: linear-gradient(145deg, rgba(10, 30, 38, 0.98), rgba(0, 8, 15, 0.98));
+      background: linear-gradient(145deg, rgba(9, 27, 34, 0.82), rgba(0, 8, 15, 0.86));
       border: 1px solid rgba(255, 255, 255, 0.32);
       font-size: 22px;
       font-weight: 900;
@@ -196,11 +196,11 @@
     .off { color: rgba(255, 255, 255, 0.48); background: rgba(255, 255, 255, 0.12); }
 
     .drive {
-      height: 218px;
+      height: 242px;
     }
 
     .drive-pad {
-      height: 186px;
+      height: 210px;
       position: relative;
       display: grid;
       place-items: center;
@@ -208,23 +208,22 @@
 
     .hex {
       position: absolute;
-      width: 255px;
-      height: 132px;
+      width: 300px;
+      height: 160px;
       clip-path: polygon(10% 50%, 28% 0, 72% 0, 90% 50%, 72% 100%, 28% 100%);
-      background: linear-gradient(145deg, rgba(2, 28, 42, 0.96), rgba(3, 43, 57, 0.9));
-      border: 2px solid rgba(85, 220, 255, 0.34);
-      filter: drop-shadow(0 0 16px rgba(85, 220, 255, 0.18));
-      transform: scale(1.14);
+      background: linear-gradient(145deg, rgba(0, 0, 0, 0.26), rgba(3, 43, 57, 0.18));
+      border: 2px solid rgba(255, 189, 88, 0.36);
+      filter: drop-shadow(0 0 16px rgba(0, 0, 0, 0.28));
     }
 
     .drive-button {
       position: absolute;
-      width: 68px;
-      height: 44px;
+      width: 80px;
+      height: 52px;
       border-radius: 999px;
       display: grid;
       place-items: center;
-      background: linear-gradient(145deg, rgba(11, 72, 92, 0.9), rgba(2, 19, 32, 0.98));
+      background: linear-gradient(145deg, rgba(11, 32, 38, 0.82), rgba(1, 8, 15, 0.88));
       border: 1px solid rgba(255, 255, 255, 0.34);
       color: rgba(255, 255, 255, 0.92);
       font-size: 28px;
@@ -232,12 +231,12 @@
       text-shadow: 0 0 10px rgba(85, 220, 255, 0.7);
     }
 
-    .up { top: 8px; left: calc(50% - 38px); width: 76px; }
-    .ul { top: 43px; left: 72px; transform: rotate(-18deg) scale(1.08); }
-    .ur { top: 43px; right: 72px; transform: rotate(18deg) scale(1.08); }
-    .dl { bottom: 50px; left: 72px; transform: rotate(18deg) scale(1.08); }
-    .down { bottom: 30px; left: calc(50% - 38px); width: 76px; }
-    .dr { bottom: 50px; right: 72px; transform: rotate(-18deg) scale(1.08); }
+    .up { top: 6px; left: calc(50% - 44px); width: 88px; }
+    .ul { top: 47px; left: 51px; transform: rotate(-18deg); }
+    .ur { top: 47px; right: 51px; transform: rotate(18deg); }
+    .dl { bottom: 54px; left: 51px; transform: rotate(18deg); }
+    .down { bottom: 10px; left: calc(50% - 44px); width: 88px; }
+    .dr { bottom: 54px; right: 51px; transform: rotate(-18deg); }
 
     .center-dot {
       position: absolute;

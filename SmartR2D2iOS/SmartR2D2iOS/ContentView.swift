@@ -226,12 +226,12 @@ private struct PortraitMainControlPanel: View {
                     activeDrive: activeDrive,
                     start: startDrive,
                     stop: stopDrive,
-                    scale: 1.14
+                    spacious: true
                 )
                 .frame(maxWidth: .infinity)
-                .frame(height: 186)
+                .frame(height: 210)
             }
-            .frame(height: 218)
+            .frame(height: 242)
 
             CommandStatusStrip(
                 isReady: isReady,
@@ -329,12 +329,22 @@ private struct ControlSection<Content: View>: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .padding(7)
-        .background(Color.black.opacity(0.68), in: RoundedRectangle(cornerRadius: 18))
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.black.opacity(0.3),
+                    Color(red: 0.02, green: 0.16, blue: 0.22).opacity(0.12)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            in: RoundedRectangle(cornerRadius: 18)
+        )
         .overlay {
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.white.opacity(0.26), lineWidth: 1)
+                .stroke(Color.white.opacity(0.32), lineWidth: 1)
         }
-        .shadow(color: .black.opacity(0.34), radius: 10, y: 5)
+        .shadow(color: .black.opacity(0.26), radius: 10, y: 5)
     }
 }
 
@@ -367,10 +377,20 @@ private struct CommandStatusStrip: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
-        .background(Color.black.opacity(0.68), in: RoundedRectangle(cornerRadius: 16))
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.black.opacity(0.48),
+                    Color(red: 0.02, green: 0.16, blue: 0.22).opacity(0.26)
+                ],
+                startPoint: .leading,
+                endPoint: .trailing
+            ),
+            in: RoundedRectangle(cornerRadius: 16)
+        )
         .overlay {
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.white.opacity(0.28), lineWidth: 1)
+                .stroke(Color.white.opacity(0.34), lineWidth: 1)
         }
         .accessibilityLabel(activeDrive == nil ? "Last command \(lastCommand)" : "Moving \(activeDrive ?? "")")
     }
@@ -664,16 +684,27 @@ private struct DrivePad: View {
     let activeDrive: String?
     let start: (R2D2Protocol.DriveDirection) -> Void
     let stop: () -> Void
-    var scale: CGFloat = 1
+    var spacious: Bool = false
 
     var body: some View {
+        let plateWidth: CGFloat = spacious ? 300 : 250
+        let plateHeight: CGFloat = spacious ? 160 : 132
+        let guideWidth: CGFloat = spacious ? 306 : 256
+        let guideHeight: CGFloat = spacious ? 160 : 132
+        let cardinalWidth: CGFloat = spacious ? 88 : 76
+        let diagonalWidth: CGFloat = spacious ? 80 : 68
+        let buttonHeight: CGFloat = spacious ? 52 : 44
+        let diagonalX: CGFloat = spacious ? 92 : 60
+        let upperY: CGFloat = spacious ? -30 : -14
+        let lowerY: CGFloat = spacious ? 50 : 34
+
         ZStack {
             HexPadPlate()
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color(red: 0.02, green: 0.12, blue: 0.2).opacity(0.94),
-                            Color(red: 0.03, green: 0.22, blue: 0.32).opacity(0.9)
+                            Color.black.opacity(0.26),
+                            Color(red: 0.03, green: 0.18, blue: 0.22).opacity(0.18)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -681,57 +712,57 @@ private struct DrivePad: View {
                 )
                 .overlay {
                     HexPadPlate()
-                        .stroke(Color.white.opacity(0.14), lineWidth: 1)
+                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
                 }
                 .overlay {
                     HexPadPlate()
-                        .stroke(Color.cyan.opacity(isEnabled ? 0.34 : 0.12), lineWidth: 2)
+                        .stroke(Color(red: 1.0, green: 0.72, blue: 0.32).opacity(isEnabled ? 0.36 : 0.14), lineWidth: 2)
                         .blur(radius: 0.2)
                 }
-                .frame(width: 250, height: 132)
-                .shadow(color: Color.cyan.opacity(isEnabled ? 0.24 : 0), radius: 10)
+                .frame(width: plateWidth, height: plateHeight)
+                .shadow(color: Color.black.opacity(0.3), radius: 10)
 
             Path { path in
-                path.move(to: CGPoint(x: 128, y: 18))
-                path.addLine(to: CGPoint(x: 128, y: 114))
-                path.move(to: CGPoint(x: 48, y: 66))
-                path.addLine(to: CGPoint(x: 208, y: 66))
-                path.move(to: CGPoint(x: 78, y: 28))
-                path.addLine(to: CGPoint(x: 178, y: 104))
-                path.move(to: CGPoint(x: 178, y: 28))
-                path.addLine(to: CGPoint(x: 78, y: 104))
+                path.move(to: CGPoint(x: guideWidth * 0.5, y: guideHeight * 0.14))
+                path.addLine(to: CGPoint(x: guideWidth * 0.5, y: guideHeight * 0.86))
+                path.move(to: CGPoint(x: guideWidth * 0.2, y: guideHeight * 0.5))
+                path.addLine(to: CGPoint(x: guideWidth * 0.8, y: guideHeight * 0.5))
+                path.move(to: CGPoint(x: guideWidth * 0.3, y: guideHeight * 0.22))
+                path.addLine(to: CGPoint(x: guideWidth * 0.7, y: guideHeight * 0.78))
+                path.move(to: CGPoint(x: guideWidth * 0.7, y: guideHeight * 0.22))
+                path.addLine(to: CGPoint(x: guideWidth * 0.3, y: guideHeight * 0.78))
             }
-            .stroke(Color.cyan.opacity(0.18), lineWidth: 1)
-            .frame(width: 256, height: 132)
+            .stroke(Color.white.opacity(0.12), lineWidth: 1)
+            .frame(width: guideWidth, height: guideHeight)
 
             Group {
                 DriveControlButton(direction: .forward, isEnabled: isEnabled, start: start, stop: stop)
-                    .frame(width: 76, height: 44)
-                    .offset(y: -42)
+                    .frame(width: cardinalWidth, height: buttonHeight)
+                    .offset(y: spacious ? -66 : -42)
 
                 DriveControlButton(direction: .forwardLeft, isEnabled: isEnabled, start: start, stop: stop)
-                    .frame(width: 68, height: 44)
+                    .frame(width: diagonalWidth, height: buttonHeight)
                     .rotationEffect(.degrees(-18))
-                    .offset(x: -60, y: -14)
+                    .offset(x: -diagonalX, y: upperY)
 
                 DriveControlButton(direction: .forwardRight, isEnabled: isEnabled, start: start, stop: stop)
-                    .frame(width: 68, height: 44)
+                    .frame(width: diagonalWidth, height: buttonHeight)
                     .rotationEffect(.degrees(18))
-                    .offset(x: 60, y: -14)
+                    .offset(x: diagonalX, y: upperY)
 
                 DriveControlButton(direction: .backwardLeft, isEnabled: isEnabled, start: start, stop: stop)
-                    .frame(width: 68, height: 44)
+                    .frame(width: diagonalWidth, height: buttonHeight)
                     .rotationEffect(.degrees(18))
-                    .offset(x: -60, y: 34)
+                    .offset(x: -diagonalX, y: lowerY)
 
                 DriveControlButton(direction: .backward, isEnabled: isEnabled, start: start, stop: stop)
-                    .frame(width: 76, height: 44)
-                    .offset(y: 50)
+                    .frame(width: cardinalWidth, height: buttonHeight)
+                    .offset(y: spacious ? 76 : 50)
 
                 DriveControlButton(direction: .backwardRight, isEnabled: isEnabled, start: start, stop: stop)
-                    .frame(width: 68, height: 44)
+                    .frame(width: diagonalWidth, height: buttonHeight)
                     .rotationEffect(.degrees(-18))
-                    .offset(x: 60, y: 34)
+                    .offset(x: diagonalX, y: lowerY)
             }
 
             Circle()
@@ -739,7 +770,6 @@ private struct DrivePad: View {
                 .frame(width: activeDrive == nil ? 10 : 13, height: activeDrive == nil ? 10 : 13)
                 .shadow(color: Color.green.opacity(activeDrive == nil ? 0 : 0.75), radius: 6)
         }
-        .scaleEffect(scale)
     }
 }
 
@@ -810,8 +840,8 @@ private struct DriveControlButton: View {
 
     private var fill: LinearGradient {
         let colors = isPressed
-            ? [Color.cyan.opacity(0.9), Color(red: 0.02, green: 0.42, blue: 0.56).opacity(0.95)]
-            : [Color(red: 0.07, green: 0.34, blue: 0.48).opacity(isEnabled ? 0.78 : 0.28), Color(red: 0.02, green: 0.12, blue: 0.2).opacity(0.9)]
+            ? [Color(red: 1.0, green: 0.72, blue: 0.32).opacity(0.86), Color(red: 0.22, green: 0.26, blue: 0.28).opacity(0.95)]
+            : [Color(red: 0.08, green: 0.16, blue: 0.19).opacity(isEnabled ? 0.76 : 0.28), Color(red: 0.01, green: 0.06, blue: 0.1).opacity(0.84)]
 
         return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
     }
@@ -1296,10 +1326,10 @@ private struct LightDock: View {
             }
         }
         .padding(7)
-        .background(Color.black.opacity(0.42), in: RoundedRectangle(cornerRadius: 18))
+        .background(Color.black.opacity(0.16), in: RoundedRectangle(cornerRadius: 18))
         .overlay {
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.cyan.opacity(isEnabled ? 0.46 : 0.18), lineWidth: 1)
+                .stroke(Color.white.opacity(isEnabled ? 0.28 : 0.12), lineWidth: 1)
         }
     }
 

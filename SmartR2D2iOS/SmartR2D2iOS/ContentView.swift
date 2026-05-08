@@ -1570,6 +1570,12 @@ private struct CommandPanelSheet: View {
             }
 
         case .behaviors:
+            Section("Custom") {
+                commandRow(title: "Cantina Dance", systemImage: "music.note.list", detail: "Playlist 165 + drive routine") {
+                    ble.playDanceSongRoutine()
+                }
+            }
+
             Section("Behavior Routines") {
                 ForEach(R2D2Protocol.behaviorGroups) { group in
                     groupRow(group)

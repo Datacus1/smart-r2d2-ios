@@ -142,6 +142,10 @@ Stationary hangout: 474
 Wakeup:             475-477
 ```
 
+The `Cantina Dance` behavior is app-composed rather than a single APK sequence:
+it starts playlist `165`, then sends a short direct head, LED, and wheel pattern
+with motor stops between movement bursts.
+
 There is no recovered Bluetooth power-on packet. The toy must already be awake
 and advertising before the app can scan or connect; `50 91` only powers it down
 after a BLE session is active.

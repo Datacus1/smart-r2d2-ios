@@ -69,6 +69,8 @@ final class R2D2BLEClient: NSObject, ObservableObject {
     private var keepAliveTimer: Timer?
     private var driveTimer: Timer?
     private var activeDriveDirection: R2D2Protocol.DriveDirection?
+    private var routineWorkItems: [DispatchWorkItem] = []
+    private var activeRoutineName: String?
     private var wantsConnectionWhenFound = false
 
     var isReady: Bool {
@@ -138,6 +140,7 @@ final class R2D2BLEClient: NSObject, ObservableObject {
 
     func disconnect() {
         wantsConnectionWhenFound = false
+        cancelRoutine()
         if isReady {
             stopDrive()
         } else {
@@ -156,6 +159,7 @@ final class R2D2BLEClient: NSObject, ObservableObject {
     func powerDownAndDisconnect() {
         wantsConnectionWhenFound = false
         central.stopScan()
+        cancelRoutine()
 
         if isReady {
             stopDrive()
@@ -190,6 +194,7 @@ final class R2D2BLEClient: NSObject, ObservableObject {
     }
 
     func startDrive(_ direction: R2D2Protocol.DriveDirection) {
+        cancelRoutine()
         activeDriveDirection = direction
         activeDriveSummary = direction.title
         lastCommandSummary = "Drive \(direction.title)"
@@ -206,36 +211,108 @@ final class R2D2BLEClient: NSObject, ObservableObject {
 
     func stopDrive() {
         lastCommandSummary = "Motors stopped"
+        cancelRoutine()
         stopDriveTimer()
         sendCommand(R2D2Protocol.stopDrive)
     }
 
     func playSound(_ sound: R2D2Protocol.Sound) {
+        cancelRoutine()
         lastCommandSummary = "Sound \(sound.title)"
         sendCommand(R2D2Protocol.playPlaylist(sound.rawValue))
     }
 
     func playPlaylist(_ playlistID: UInt16) {
+        cancelRoutine()
         lastCommandSummary = "Sound \(playlistID)"
         sendCommand(R2D2Protocol.playPlaylist(playlistID))
     }
 
     func playExpression(_ expression: R2D2Protocol.Expression) {
+        cancelRoutine()
         lastCommandSummary = expression.title
         sendCommand(R2D2Protocol.expression(expression))
     }
 
     func playSequence(_ sequenceID: UInt16) {
+        cancelRoutine()
         lastCommandSummary = "Sequence \(sequenceID)"
         sendCommand(R2D2Protocol.highLevelSequence(sequenceID))
     }
 
+    func playDanceSongRoutine() {
+        guard isReady else {
+            lastCommandSummary = "Connect first"
+            log("Connect before starting dance song")
+            return
+        }
+
+        cancelRoutine(stopMotors: true)
+        stopDriveTimer()
+
+        activeRoutineName = "Cantina Dance"
+        activeDriveSummary = "Cantina Dance"
+        lastCommandSummary = "Cantina Dance"
+        sendCommand(R2D2Protocol.playPlaylist(165))
+        sendCommand(R2D2Protocol.led(.blue))
+        sendCommand(R2D2Protocol.head(.center))
+
+        queueRoutineCommand(after: 0.45) { client in
+            client.sendCommand(R2D2Protocol.head(.left))
+        }
+        queueRoutineCommand(after: 0.65) { client in
+            client.sendCommand(R2D2Protocol.drive(.forwardLeft))
+        }
+        queueRoutineCommand(after: 1.35) { client in
+            client.sendCommand(R2D2Protocol.stopDrive)
+        }
+        queueRoutineCommand(after: 1.55) { client in
+            client.sendCommand(R2D2Protocol.head(.right))
+            client.sendCommand(R2D2Protocol.led(.red))
+        }
+        queueRoutineCommand(after: 1.75) { client in
+            client.sendCommand(R2D2Protocol.drive(.backwardRight))
+        }
+        queueRoutineCommand(after: 2.45) { client in
+            client.sendCommand(R2D2Protocol.stopDrive)
+        }
+        queueRoutineCommand(after: 2.7) { client in
+            client.sendCommand(R2D2Protocol.head(.left))
+            client.sendCommand(R2D2Protocol.led(.blue))
+        }
+        queueRoutineCommand(after: 2.9) { client in
+            client.sendCommand(R2D2Protocol.drive(.forwardRight))
+        }
+        queueRoutineCommand(after: 3.6) { client in
+            client.sendCommand(R2D2Protocol.stopDrive)
+        }
+        queueRoutineCommand(after: 3.85) { client in
+            client.sendCommand(R2D2Protocol.head(.right))
+        }
+        queueRoutineCommand(after: 4.05) { client in
+            client.sendCommand(R2D2Protocol.drive(.backwardLeft))
+        }
+        queueRoutineCommand(after: 4.75) { client in
+            client.sendCommand(R2D2Protocol.stopDrive)
+        }
+        queueRoutineCommand(after: 5.0) { client in
+            client.sendCommand(R2D2Protocol.head(.center))
+            client.sendCommand(R2D2Protocol.led(.blue))
+            client.activeRoutineName = nil
+            client.activeDriveSummary = nil
+            client.routineWorkItems.removeAll()
+            client.lastCommandSummary = "Cantina Dance done"
+        }
+    }
+
     func stopAudio() {
+        cancelRoutine()
         lastCommandSummary = "Audio stopped"
         sendCommand(R2D2Protocol.stopSequences(flags: R2D2Protocol.StopFlags.audioPlaylist))
     }
 
     func stopSequences(flags: UInt8) {
+        cancelRoutine()
         lastCommandSummary = "Stop \(String(format: "%02X", flags))"
         sendCommand(R2D2Protocol.stopSequences(flags: flags))
     }
@@ -271,6 +348,32 @@ final class R2D2BLEClient: NSObject, ObservableObject {
     private func sendCommand(_ data: Data) {
         sendRaw(R2D2Protocol.keepAlive)
         sendRaw(data)
+    }
+
+    private func queueRoutineCommand(after delay: TimeInterval, _ action: @escaping (R2D2BLEClient) -> Void) {
+        let item = DispatchWorkItem { [weak self] in
+            guard let self, self.isReady, self.activeRoutineName != nil else {
+                return
+            }
+            action(self)
+        }
+        routineWorkItems.append(item)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: item)
+    }
+
+    private func cancelRoutine(stopMotors: Bool = false) {
+        let hadRoutine = activeRoutineName != nil || !routineWorkItems.isEmpty
+        routineWorkItems.forEach { $0.cancel() }
+        routineWorkItems.removeAll()
+        activeRoutineName = nil
+
+        if hadRoutine {
+            activeDriveSummary = nil
+        }
+
+        if stopMotors && isReady {
+            sendCommand(R2D2Protocol.stopDrive)
+        }
     }
 
     private func startKeepAlive() {

@@ -14,7 +14,7 @@ struct ContentView: View {
             let isLandscape = proxy.size.width > proxy.size.height
 
             ZStack {
-                BlueprintBackground()
+                DroidWallpaperView()
                     .ignoresSafeArea()
 
                 if isLandscape {
@@ -73,16 +73,7 @@ struct ContentView: View {
     }
 
     private var landscapeConsole: some View {
-        ZStack {
-            HStack {
-                Spacer(minLength: 0)
-                R2D2BodyView(isReady: ble.isReady)
-                    .opacity(0.34)
-                    .saturation(0.82)
-                    .frame(width: 430)
-                    .allowsHitTesting(false)
-            }
-
+        ZStack(alignment: .center) {
             HStack(spacing: 12) {
                 MainControlPanel(
                     isReady: ble.isReady,
@@ -110,43 +101,29 @@ struct ContentView: View {
     }
 
     private var portraitConsole: some View {
-        ZStack(alignment: .top) {
-            VStack {
-                R2D2BodyView(isReady: ble.isReady)
-                    .opacity(0.13)
-                    .saturation(0.72)
-                    .frame(maxWidth: 340)
-                    .offset(y: 210)
-                    .allowsHitTesting(false)
+        VStack(spacing: 12) {
+            PortraitMainControlPanel(
+                isReady: ble.isReady,
+                lastCommand: ble.lastCommandSummary,
+                activeDrive: ble.activeDriveSummary,
+                setHead: { ble.setHead($0) },
+                startDrive: { ble.startDrive($0) },
+                stopDrive: { ble.stopDrive() },
+                setLED: { ble.setLED($0) }
+            )
+            .frame(maxWidth: .infinity)
 
-                Spacer(minLength: 0)
+            Spacer(minLength: 12)
+
+            CompactActionDock(axis: .horizontal) { panel in
+                activeCommandPanel = panel
+            } moreAction: {
+                isActionDrawerPresented = true
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            VStack(spacing: 10) {
-                PortraitMainControlPanel(
-                    isReady: ble.isReady,
-                    lastCommand: ble.lastCommandSummary,
-                    activeDrive: ble.activeDriveSummary,
-                    setHead: { ble.setHead($0) },
-                    startDrive: { ble.startDrive($0) },
-                    stopDrive: { ble.stopDrive() },
-                    setLED: { ble.setLED($0) }
-                )
-                .frame(maxWidth: .infinity)
-
-                Spacer(minLength: 8)
-
-                CompactActionDock(axis: .horizontal) { panel in
-                    activeCommandPanel = panel
-                } moreAction: {
-                    isActionDrawerPresented = true
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .padding(.top, 6)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .frame(maxWidth: .infinity)
         }
+        .padding(.top, 18)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }
 
@@ -172,6 +149,56 @@ private struct R2D2Stage<Content: View>: View {
     }
 }
 
+private struct DroidWallpaperView: View {
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack {
+                Image("R2D2Wallpaper")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: proxy.size.width, height: proxy.size.height)
+                    .clipped()
+                    .saturation(0.95)
+                    .brightness(-0.08)
+
+                LinearGradient(
+                    colors: [
+                        Color.black.opacity(0.72),
+                        Color(red: 0.0, green: 0.13, blue: 0.22).opacity(0.36),
+                        Color.black.opacity(0.68)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+
+                LinearGradient(
+                    colors: [
+                        Color.black.opacity(0.92),
+                        Color.black.opacity(0.58),
+                        Color.clear
+                    ],
+                    startPoint: .top,
+                    endPoint: .center
+                )
+
+                RadialGradient(
+                    colors: [
+                        Color.cyan.opacity(0.16),
+                        Color.clear
+                    ],
+                    center: .center,
+                    startRadius: 40,
+                    endRadius: 420
+                )
+                .blendMode(.screen)
+
+                GridPattern()
+                    .stroke(Color.cyan.opacity(0.09), lineWidth: 1)
+            }
+        }
+    }
+}
+
 private struct PortraitMainControlPanel: View {
     let isReady: Bool
     let lastCommand: String
@@ -182,35 +209,36 @@ private struct PortraitMainControlPanel: View {
     let setLED: (R2D2Protocol.LEDColor) -> Void
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             ControlSection(title: "Head") {
                 headControls
             }
-            .frame(height: 72)
+            .frame(height: 78)
 
             ControlSection(title: "Lights") {
                 LightDock(isEnabled: isReady, action: setLED)
             }
-            .frame(height: 72)
+            .frame(height: 78)
 
             ControlSection(title: "Drive") {
                 DrivePad(
                     isEnabled: isReady,
                     activeDrive: activeDrive,
                     start: startDrive,
-                    stop: stopDrive
+                    stop: stopDrive,
+                    scale: 1.14
                 )
                 .frame(maxWidth: .infinity)
-                .frame(height: 146)
+                .frame(height: 186)
             }
-            .frame(height: 176)
+            .frame(height: 218)
 
             CommandStatusStrip(
                 isReady: isReady,
                 lastCommand: lastCommand,
                 activeDrive: activeDrive
             )
-            .frame(height: 38)
+            .frame(height: 42)
         }
     }
 
@@ -294,19 +322,19 @@ private struct ControlSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title.uppercased())
                 .font(.system(size: 8, weight: .black))
-                .foregroundStyle(.cyan.opacity(0.78))
+                .foregroundStyle(Color(red: 1.0, green: 0.72, blue: 0.32).opacity(0.92))
                 .padding(.horizontal, 4)
 
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .padding(7)
-        .background(Color.black.opacity(0.34), in: RoundedRectangle(cornerRadius: 18))
+        .background(Color.black.opacity(0.68), in: RoundedRectangle(cornerRadius: 18))
         .overlay {
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.white.opacity(0.14), lineWidth: 1)
+                .stroke(Color.white.opacity(0.26), lineWidth: 1)
         }
-        .shadow(color: .black.opacity(0.18), radius: 8, y: 4)
+        .shadow(color: .black.opacity(0.34), radius: 10, y: 5)
     }
 }
 
@@ -339,10 +367,10 @@ private struct CommandStatusStrip: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
-        .background(Color.black.opacity(0.28), in: RoundedRectangle(cornerRadius: 16))
+        .background(Color.black.opacity(0.68), in: RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                .stroke(Color.white.opacity(0.28), lineWidth: 1)
         }
         .accessibilityLabel(activeDrive == nil ? "Last command \(lastCommand)" : "Moving \(activeDrive ?? "")")
     }
@@ -636,6 +664,7 @@ private struct DrivePad: View {
     let activeDrive: String?
     let start: (R2D2Protocol.DriveDirection) -> Void
     let stop: () -> Void
+    var scale: CGFloat = 1
 
     var body: some View {
         ZStack {
@@ -710,6 +739,7 @@ private struct DrivePad: View {
                 .frame(width: activeDrive == nil ? 10 : 13, height: activeDrive == nil ? 10 : 13)
                 .shadow(color: Color.green.opacity(activeDrive == nil ? 0 : 0.75), radius: 6)
         }
+        .scaleEffect(scale)
     }
 }
 
@@ -1109,10 +1139,10 @@ private struct CompactActionDock: View {
                 moreButton
             }
             .padding(8)
-            .background(Color.black.opacity(0.18), in: RoundedRectangle(cornerRadius: 20))
+            .background(Color.black.opacity(0.42), in: RoundedRectangle(cornerRadius: 20))
             .overlay {
                 RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                    .stroke(Color.white.opacity(0.18), lineWidth: 1)
             }
         } else {
             HStack(spacing: 6) {
@@ -1142,8 +1172,8 @@ private struct CompactActionDock: View {
             .background(
                 LinearGradient(
                     colors: [
-                        Color(red: 0.03, green: 0.18, blue: 0.27).opacity(0.82),
-                        Color(red: 0.02, green: 0.09, blue: 0.15).opacity(0.9)
+                        Color(red: 0.02, green: 0.19, blue: 0.28).opacity(0.96),
+                        Color(red: 0.01, green: 0.07, blue: 0.13).opacity(0.98)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -1152,7 +1182,7 @@ private struct CompactActionDock: View {
             )
             .overlay {
                 RoundedRectangle(cornerRadius: 15)
-                    .stroke(Color.white.opacity(0.16), lineWidth: 1)
+                    .stroke(Color.white.opacity(0.24), lineWidth: 1)
             }
         }
         .buttonStyle(.plain)
@@ -1172,10 +1202,10 @@ private struct CompactActionDock: View {
             }
             .foregroundStyle(Color.cyan.opacity(0.95))
             .frame(width: axis == .vertical ? 92 : 64, height: 48)
-            .background(Color.black.opacity(0.24), in: RoundedRectangle(cornerRadius: 15))
+            .background(Color.black.opacity(0.56), in: RoundedRectangle(cornerRadius: 15))
             .overlay {
                 RoundedRectangle(cornerRadius: 15)
-                    .stroke(Color.cyan.opacity(0.34), lineWidth: 1)
+                    .stroke(Color.cyan.opacity(0.48), lineWidth: 1)
             }
         }
         .buttonStyle(.plain)
@@ -1247,8 +1277,8 @@ private struct LightDock: View {
                     .background(
                         LinearGradient(
                             colors: [
-                                Color(red: 0.03, green: 0.18, blue: 0.27).opacity(0.92),
-                                Color(red: 0.02, green: 0.09, blue: 0.16).opacity(0.9)
+                                Color(red: 0.02, green: 0.19, blue: 0.28).opacity(0.96),
+                                Color(red: 0.01, green: 0.07, blue: 0.13).opacity(0.98)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -1257,7 +1287,7 @@ private struct LightDock: View {
                     )
                     .overlay {
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.white.opacity(0.14), lineWidth: 1)
+                            .stroke(Color.white.opacity(0.24), lineWidth: 1)
                     }
                 }
                 .buttonStyle(.plain)
@@ -1266,10 +1296,10 @@ private struct LightDock: View {
             }
         }
         .padding(7)
-        .background(Color.black.opacity(0.24), in: RoundedRectangle(cornerRadius: 18))
+        .background(Color.black.opacity(0.42), in: RoundedRectangle(cornerRadius: 18))
         .overlay {
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.cyan.opacity(isEnabled ? 0.3 : 0.12), lineWidth: 1)
+                .stroke(Color.cyan.opacity(isEnabled ? 0.46 : 0.18), lineWidth: 1)
         }
     }
 
@@ -1295,12 +1325,12 @@ private struct HUDIconButton: View {
         } label: {
             ZStack {
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(red: 0.02, green: 0.12, blue: 0.22).opacity(0.82))
+                    .fill(Color(red: 0.01, green: 0.08, blue: 0.14).opacity(0.9))
                     .overlay {
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.cyan.opacity(isEnabled ? 0.68 : 0.24), lineWidth: 1.5)
+                            .stroke(Color.cyan.opacity(isEnabled ? 0.76 : 0.28), lineWidth: 1.5)
                     }
-                    .shadow(color: Color.cyan.opacity(isEnabled ? 0.22 : 0), radius: 8)
+                    .shadow(color: Color.black.opacity(0.42), radius: 8, y: 4)
 
                 Image(systemName: systemImage)
                     .font(.system(size: 22, weight: .semibold))
@@ -1345,12 +1375,12 @@ private struct StatusPill: View {
             .foregroundStyle(.white)
             .padding(.horizontal, 14)
             .frame(minWidth: 170, maxWidth: 230, minHeight: 52, maxHeight: 52)
-            .background(Color(red: 0.02, green: 0.12, blue: 0.22).opacity(0.84), in: RoundedRectangle(cornerRadius: 16))
+            .background(Color(red: 0.01, green: 0.08, blue: 0.14).opacity(0.92), in: RoundedRectangle(cornerRadius: 16))
             .overlay {
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.cyan.opacity(0.62), lineWidth: 1.5)
+                    .stroke(Color.cyan.opacity(0.72), lineWidth: 1.5)
             }
-            .shadow(color: Color.cyan.opacity(isReady ? 0.32 : 0.16), radius: 9)
+            .shadow(color: Color.black.opacity(0.46), radius: 9, y: 4)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(title)

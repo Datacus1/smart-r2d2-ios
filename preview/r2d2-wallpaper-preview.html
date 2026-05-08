@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart R2-D2 iPhone 16 Preview</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --cyan: #55dcff;
+      --amber: #ffbd58;
+      --panel: rgba(0, 8, 15, 0.82);
+      --panel-strong: rgba(0, 6, 12, 0.92);
+      --stroke: rgba(235, 248, 255, 0.32);
+      --text: rgba(255, 255, 255, 0.96);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      background: #06101a;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .phone {
+      position: relative;
+      width: 393px;
+      height: 852px;
+      overflow: hidden;
+      border-radius: 4px;
+      background: #061827 url("../SmartR2D2iOS/SmartR2D2iOS/Assets.xcassets/R2D2Wallpaper.imageset/R2D2Wallpaper.jpg") center / cover no-repeat;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.62);
+      color: var(--text);
+    }
+
+    .phone::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.58) 24%, transparent 52%),
+        radial-gradient(circle at 50% 48%, rgba(79, 220, 255, 0.16), transparent 46%),
+        linear-gradient(145deg, rgba(0, 0, 0, 0.72), rgba(2, 30, 48, 0.34) 44%, rgba(0, 0, 0, 0.72));
+    }
+
+    .phone::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(104, 224, 255, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(104, 224, 255, 0.07) 1px, transparent 1px);
+      background-size: 18px 18px;
+      pointer-events: none;
+    }
+
+    .status {
+      position: absolute;
+      top: 12px;
+      left: 24px;
+      right: 24px;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.72);
+    }
+
+    .topbar {
+      position: absolute;
+      top: 52px;
+      left: 20px;
+      right: 20px;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 52px 1fr 52px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .hud,
+    .pill,
+    .section,
+    .dock button,
+    .status-strip {
+      background: var(--panel);
+      border: 1px solid var(--stroke);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.42);
+      backdrop-filter: blur(6px);
+    }
+
+    .hud {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      color: white;
+      font-size: 26px;
+      font-weight: 900;
+    }
+
+    .pill {
+      height: 52px;
+      min-width: 0;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 12px;
+      font-size: 14px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan);
+      flex: 0 0 auto;
+    }
+
+    .controls {
+      position: absolute;
+      z-index: 2;
+      top: 134px;
+      left: 18px;
+      right: 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .section {
+      border-radius: 18px;
+      background: rgba(0, 7, 13, 0.84);
+      padding: 7px;
+    }
+
+    .label {
+      color: var(--amber);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      margin: 0 0 6px 4px;
+    }
+
+    .head,
+    .lights {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .button {
+      height: 50px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      color: rgba(255, 255, 255, 0.94);
+      background: linear-gradient(145deg, rgba(10, 30, 38, 0.98), rgba(0, 8, 15, 0.98));
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      font-size: 22px;
+      font-weight: 900;
+      text-shadow: 0 0 10px rgba(85, 220, 255, 0.72);
+    }
+
+    .lights .button {
+      grid-auto-flow: column;
+      gap: 8px;
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      box-shadow: 0 0 12px currentColor;
+    }
+
+    .blue { color: #55dcff; background: #25c9ff; }
+    .red { color: #ff5366; background: #a73543; }
+    .off { color: rgba(255, 255, 255, 0.48); background: rgba(255, 255, 255, 0.12); }
+
+    .drive {
+      height: 218px;
+    }
+
+    .drive-pad {
+      height: 186px;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .hex {
+      position: absolute;
+      width: 255px;
+      height: 132px;
+      clip-path: polygon(10% 50%, 28% 0, 72% 0, 90% 50%, 72% 100%, 28% 100%);
+      background: linear-gradient(145deg, rgba(2, 28, 42, 0.96), rgba(3, 43, 57, 0.9));
+      border: 2px solid rgba(85, 220, 255, 0.34);
+      filter: drop-shadow(0 0 16px rgba(85, 220, 255, 0.18));
+      transform: scale(1.14);
+    }
+
+    .drive-button {
+      position: absolute;
+      width: 68px;
+      height: 44px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, rgba(11, 72, 92, 0.9), rgba(2, 19, 32, 0.98));
+      border: 1px solid rgba(255, 255, 255, 0.34);
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 28px;
+      font-weight: 900;
+      text-shadow: 0 0 10px rgba(85, 220, 255, 0.7);
+    }
+
+    .up { top: 8px; left: calc(50% - 38px); width: 76px; }
+    .ul { top: 43px; left: 72px; transform: rotate(-18deg) scale(1.08); }
+    .ur { top: 43px; right: 72px; transform: rotate(18deg) scale(1.08); }
+    .dl { bottom: 50px; left: 72px; transform: rotate(18deg) scale(1.08); }
+    .down { bottom: 30px; left: calc(50% - 38px); width: 76px; }
+    .dr { bottom: 50px; right: 72px; transform: rotate(-18deg) scale(1.08); }
+
+    .center-dot {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.32);
+    }
+
+    .status-strip {
+      height: 42px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 12px;
+      background: var(--panel-strong);
+    }
+
+    .status-strip small {
+      display: block;
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 7px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .status-strip strong {
+      display: block;
+      font-size: 11px;
+    }
+
+    .dock {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+
+    .dock button {
+      height: 48px;
+      border-radius: 15px;
+      color: white;
+      font: 900 8px/1.1 Inter, system-ui, sans-serif;
+      text-transform: uppercase;
+      display: grid;
+      place-items: center;
+      gap: 4px;
+    }
+
+    .dock span {
+      font-size: 18px;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <main class="phone" aria-label="iPhone 16 portrait Smart R2-D2 remote preview">
+    <div class="status"><span>09:01</span><span>5G Wi-Fi Battery</span></div>
+    <div class="topbar">
+      <div class="hud">&#9881;</div>
+      <div class="pill"><span class="dot"></span><span>Connect</span></div>
+      <div class="hud">&#9881;</div>
+    </div>
+
+    <section class="controls">
+      <div class="section">
+        <div class="label">Head</div>
+        <div class="head">
+          <div class="button">&#8592;</div>
+          <div class="button">&#9679;</div>
+          <div class="button">&#8594;</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="label">Lights</div>
+        <div class="lights">
+          <div class="button"><span class="swatch blue"></span>Blue</div>
+          <div class="button"><span class="swatch red"></span>Red</div>
+          <div class="button"><span class="swatch off"></span>Off</div>
+        </div>
+      </div>
+
+      <div class="section drive">
+        <div class="label">Drive</div>
+        <div class="drive-pad">
+          <div class="hex"></div>
+          <div class="drive-button up">&#8593;</div>
+          <div class="drive-button ul">&#8598;</div>
+          <div class="drive-button ur">&#8599;</div>
+          <div class="drive-button dl">&#8601;</div>
+          <div class="drive-button down">&#8595;</div>
+          <div class="drive-button dr">&#8600;</div>
+          <div class="center-dot"></div>
+        </div>
+      </div>
+
+      <div class="status-strip">
+        <span class="dot"></span>
+        <div><small>Last command</small><strong>Idle</strong></div>
+      </div>
+    </section>
+
+    <nav class="dock" aria-label="Secondary actions">
+      <button><span>&#9834;</span>Sounds</button>
+      <button><span>&#9786;</span>Moods</button>
+      <button><span>&#9835;</span>Dance</button>
+      <button><span>#</span>Catalog</button>
+      <button><span>&#9638;</span>More</button>
+    </nav>
+  </main>
+</body>
+</html>

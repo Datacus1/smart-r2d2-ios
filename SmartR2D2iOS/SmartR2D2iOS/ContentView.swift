@@ -85,7 +85,6 @@ struct ContentView: View {
 
             HStack(spacing: 12) {
                 MainControlPanel(
-                    layout: .landscape,
                     isReady: ble.isReady,
                     lastCommand: ble.lastCommandSummary,
                     activeDrive: ble.activeDriveSummary,
@@ -125,8 +124,7 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             VStack(spacing: 10) {
-                MainControlPanel(
-                    layout: .portrait,
+                PortraitMainControlPanel(
                     isReady: ble.isReady,
                     lastCommand: ble.lastCommandSummary,
                     activeDrive: ble.activeDriveSummary,
@@ -152,11 +150,6 @@ struct ContentView: View {
     }
 }
 
-private enum RemoteControlLayout: Equatable {
-    case landscape
-    case portrait
-}
-
 private struct R2D2Stage<Content: View>: View {
     let content: Content
 
@@ -179,8 +172,7 @@ private struct R2D2Stage<Content: View>: View {
     }
 }
 
-private struct MainControlPanel: View {
-    let layout: RemoteControlLayout
+private struct PortraitMainControlPanel: View {
     let isReady: Bool
     let lastCommand: String
     let activeDrive: String?
@@ -190,14 +182,6 @@ private struct MainControlPanel: View {
     let setLED: (R2D2Protocol.LEDColor) -> Void
 
     var body: some View {
-        if layout == .portrait {
-            portraitBody
-        } else {
-            landscapeBody
-        }
-    }
-
-    private var portraitBody: some View {
         VStack(spacing: 8) {
             ControlSection(title: "Head") {
                 headControls
@@ -229,7 +213,28 @@ private struct MainControlPanel: View {
         }
     }
 
-    private var landscapeBody: some View {
+    private var headControls: some View {
+        HStack(spacing: 8) {
+            ForEach(R2D2Protocol.HeadPosition.allCases) { position in
+                HeadButton(position: position, isEnabled: isReady) {
+                    setHead(position)
+                }
+                .frame(maxWidth: .infinity, minHeight: 50, maxHeight: 50)
+            }
+        }
+    }
+}
+
+private struct MainControlPanel: View {
+    let isReady: Bool
+    let lastCommand: String
+    let activeDrive: String?
+    let setHead: (R2D2Protocol.HeadPosition) -> Void
+    let startDrive: (R2D2Protocol.DriveDirection) -> Void
+    let stopDrive: () -> Void
+    let setLED: (R2D2Protocol.LEDColor) -> Void
+
+    var body: some View {
         VStack(spacing: 5) {
             HStack(spacing: 8) {
                 ControlSection(title: "Head") {

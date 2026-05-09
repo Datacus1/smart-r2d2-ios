@@ -143,8 +143,12 @@ Wakeup:             475-477
 ```
 
 The `Cantina Dance` behavior is app-composed rather than a single APK sequence:
-it starts playlist `165`, then sends a short direct head, LED, and wheel pattern
-with motor stops between movement bursts.
+it starts playlist `165`, then runs an APK-inspired choreography for about 18
+seconds. The routine borrows the old app's dance structure: shuffle-style
+forward/back movement, alternating diagonal turns, head sweeps, and blue/red
+light changes. Each wheel burst has an explicit motor stop, and any manual
+head, light, sound, sequence, or stop command interrupts the routine and stops
+the motors before taking over.
 
 There is no recovered Bluetooth power-on packet. The toy must already be awake
 and advertising before the app can scan or connect; `50 91` only powers it down

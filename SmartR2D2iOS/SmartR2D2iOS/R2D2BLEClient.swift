@@ -184,11 +184,13 @@ final class R2D2BLEClient: NSObject, ObservableObject {
     }
 
     func setHead(_ position: R2D2Protocol.HeadPosition) {
+        cancelRoutine(stopMotors: true)
         lastCommandSummary = "Head \(position.title)"
         sendCommand(R2D2Protocol.head(position))
     }
 
     func setLED(_ color: R2D2Protocol.LEDColor) {
+        cancelRoutine(stopMotors: true)
         lastCommandSummary = "\(color.rawValue) light"
         sendCommand(R2D2Protocol.led(color))
     }
@@ -217,25 +219,25 @@ final class R2D2BLEClient: NSObject, ObservableObject {
     }
 
     func playSound(_ sound: R2D2Protocol.Sound) {
-        cancelRoutine()
+        cancelRoutine(stopMotors: true)
         lastCommandSummary = "Sound \(sound.title)"
         sendCommand(R2D2Protocol.playPlaylist(sound.rawValue))
     }
 
     func playPlaylist(_ playlistID: UInt16) {
-        cancelRoutine()
+        cancelRoutine(stopMotors: true)
         lastCommandSummary = "Sound \(playlistID)"
         sendCommand(R2D2Protocol.playPlaylist(playlistID))
     }
 
     func playExpression(_ expression: R2D2Protocol.Expression) {
-        cancelRoutine()
+        cancelRoutine(stopMotors: true)
         lastCommandSummary = expression.title
         sendCommand(R2D2Protocol.expression(expression))
     }
 
     func playSequence(_ sequenceID: UInt16) {
-        cancelRoutine()
+        cancelRoutine(stopMotors: true)
         lastCommandSummary = "Sequence \(sequenceID)"
         sendCommand(R2D2Protocol.highLevelSequence(sequenceID))
     }
@@ -257,45 +259,80 @@ final class R2D2BLEClient: NSObject, ObservableObject {
         sendCommand(R2D2Protocol.led(.blue))
         sendCommand(R2D2Protocol.head(.center))
 
-        queueRoutineCommand(after: 0.45) { client in
-            client.sendCommand(R2D2Protocol.head(.left))
+        func queue(_ delay: TimeInterval, _ action: @escaping (R2D2BLEClient) -> Void) {
+            queueRoutineCommand(after: delay, action)
         }
-        queueRoutineCommand(after: 0.65) { client in
-            client.sendCommand(R2D2Protocol.drive(.forwardLeft))
+
+        func driveBurst(_ delay: TimeInterval, _ direction: R2D2Protocol.DriveDirection, duration: TimeInterval = 0.62) {
+            queue(delay) { client in
+                client.sendCommand(R2D2Protocol.drive(direction))
+            }
+            queue(delay + duration) { client in
+                client.sendCommand(R2D2Protocol.stopDrive)
+            }
         }
-        queueRoutineCommand(after: 1.35) { client in
+
+        func headAt(_ delay: TimeInterval, _ position: R2D2Protocol.HeadPosition) {
+            queue(delay) { client in
+                client.sendCommand(R2D2Protocol.head(position))
+            }
+        }
+
+        func lightAt(_ delay: TimeInterval, _ color: R2D2Protocol.LEDColor) {
+            queue(delay) { client in
+                client.sendCommand(R2D2Protocol.led(color))
+            }
+        }
+
+        // APK-style choreography: shuffle forward/back, turn accents, head sweeps, and light changes.
+        headAt(0.4, .left)
+        lightAt(0.55, .blue)
+        driveBurst(0.75, .forwardLeft)
+        headAt(1.25, .right)
+        lightAt(1.45, .red)
+        driveBurst(1.65, .backwardRight)
+
+        headAt(2.55, .center)
+        lightAt(2.75, .blue)
+        driveBurst(2.95, .forwardRight)
+        headAt(3.45, .left)
+        driveBurst(3.85, .backwardLeft)
+
+        lightAt(4.8, .red)
+        headAt(5.0, .right)
+        driveBurst(5.25, .forward)
+        headAt(5.9, .center)
+        driveBurst(6.25, .backward)
+
+        lightAt(7.15, .blue)
+        headAt(7.35, .left)
+        driveBurst(7.6, .forwardLeft)
+        headAt(8.1, .right)
+        driveBurst(8.55, .backwardRight)
+
+        lightAt(9.45, .red)
+        driveBurst(9.65, .forwardRight)
+        headAt(10.15, .left)
+        driveBurst(10.6, .backwardLeft)
+
+        lightAt(11.5, .blue)
+        headAt(11.7, .center)
+        driveBurst(12.0, .forward, duration: 0.5)
+        driveBurst(12.8, .backward, duration: 0.5)
+        headAt(13.45, .right)
+        driveBurst(13.7, .forwardLeft)
+        headAt(14.25, .left)
+        driveBurst(14.65, .backwardRight)
+
+        lightAt(15.55, .red)
+        headAt(15.75, .right)
+        driveBurst(16.0, .forwardRight, duration: 0.5)
+        lightAt(16.45, .blue)
+        headAt(16.65, .left)
+        driveBurst(16.9, .backwardLeft, duration: 0.5)
+
+        queue(17.65) { client in
             client.sendCommand(R2D2Protocol.stopDrive)
-        }
-        queueRoutineCommand(after: 1.55) { client in
-            client.sendCommand(R2D2Protocol.head(.right))
-            client.sendCommand(R2D2Protocol.led(.red))
-        }
-        queueRoutineCommand(after: 1.75) { client in
-            client.sendCommand(R2D2Protocol.drive(.backwardRight))
-        }
-        queueRoutineCommand(after: 2.45) { client in
-            client.sendCommand(R2D2Protocol.stopDrive)
-        }
-        queueRoutineCommand(after: 2.7) { client in
-            client.sendCommand(R2D2Protocol.head(.left))
-            client.sendCommand(R2D2Protocol.led(.blue))
-        }
-        queueRoutineCommand(after: 2.9) { client in
-            client.sendCommand(R2D2Protocol.drive(.forwardRight))
-        }
-        queueRoutineCommand(after: 3.6) { client in
-            client.sendCommand(R2D2Protocol.stopDrive)
-        }
-        queueRoutineCommand(after: 3.85) { client in
-            client.sendCommand(R2D2Protocol.head(.right))
-        }
-        queueRoutineCommand(after: 4.05) { client in
-            client.sendCommand(R2D2Protocol.drive(.backwardLeft))
-        }
-        queueRoutineCommand(after: 4.75) { client in
-            client.sendCommand(R2D2Protocol.stopDrive)
-        }
-        queueRoutineCommand(after: 5.0) { client in
             client.sendCommand(R2D2Protocol.head(.center))
             client.sendCommand(R2D2Protocol.led(.blue))
             client.activeRoutineName = nil
@@ -306,13 +343,13 @@ final class R2D2BLEClient: NSObject, ObservableObject {
     }
 
     func stopAudio() {
-        cancelRoutine()
+        cancelRoutine(stopMotors: true)
         lastCommandSummary = "Audio stopped"
         sendCommand(R2D2Protocol.stopSequences(flags: R2D2Protocol.StopFlags.audioPlaylist))
     }
 
     func stopSequences(flags: UInt8) {
-        cancelRoutine()
+        cancelRoutine(stopMotors: true)
         lastCommandSummary = "Stop \(String(format: "%02X", flags))"
         sendCommand(R2D2Protocol.stopSequences(flags: flags))
     }
